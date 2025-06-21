@@ -1,0 +1,35 @@
+﻿@model List<FormModel>
+
+@{
+    ViewData["Title"] = "All Incidents";
+}
+
+<h2>📝 All Incidents</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>QARID</th>
+            <th>Date</th>
+            <th>Summary</th>
+            <th>Hospital ID</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var incident in Model)
+        {
+            <tr>
+                <td>@incident.qarid</td>
+                <td>@incident.incidentdate?.ToString("yyyy-MM-dd")</td>
+                <td>@incident.summary</td>
+                <td>@incident.hospitalid</td>
+                <td>@incident.status</td>
+                <td>
+                    <a class="btn btn-sm btn-info" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid })">✏️ Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,1372 @@
+﻿@model Mimsv2.Models.FormModel
+@{
+    ViewData["Title"] = "Mims Incident Edit Form";
+}
+
+<p>Session Access Level: <strong>@Model.AccessLevel</strong></p>
+
+@{
+    var loginHospitalId = Context.Session.GetString("loginhospitalid");
+}
+<p>Logged-in Hospital ID: <strong>@loginHospitalId</strong></p>
+<p>Model Hospital ID: <strong>@Model.inserthospitalid</strong></p>
+
+<h3>New Incident Form</h3>
+Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
+<br />
+
+
+<form asp-action="EditIncident" method="post" id="incidentForm" style="min-height:200vh;">
+    <input type="hidden" asp-for="CapturedByLoginName" />
+    <input type="hidden" asp-for="CapturedByName" />
+    <input type="hidden" asp-for="CapturedBySurname" />
+    <input type="hidden" asp-for="CapturedByTitle" />
+    <input type="hidden" asp-for="CapturedByEmail" />
+    <input type="hidden" asp-for="HospitalId" />
+    <input type="hidden" asp-for="CapturedbyDpt" />
+    <input type="hidden" asp-for="CapturedbyDpt" />
+    <input type="hidden" asp-for="active" value="Y" />
+    <input type="hidden" asp-for="qarid" />
+
+    <section class="form_grid">
+        <div class="form_grid_item_span4">Section A: Incident Details</div>
+        <div class="form_grid_item_span2">
+            <label for="hospitalid">Hospital</label>
+            <select class="form-control" asp-for="inserthospitalid" asp-items="Model.Hospitals" id="hospitalid">
+                <option value="">Please Select</option>
+            </select>
+        </div>
+        <div class="form_grid_item_span2">
+            <label for="affectedward">Affected Ward</label>
+            <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward">
+                <option value="">Please Select</option>
+            </select>
+        </div>
+        <div class="form_grid_item_span4">Section B: Person Involved</div>
+        <div class="form_grid_item">
+            <label for="inctypescat1">Type of Incident</label>
+            <select class="form-control" asp-for="pte" asp-items="Model.IncidentCategories" id="cat">
+                <option value="">No Category</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="inctypescat2">Incident</label>
+            <select class="form-control" asp-for="incidenttype" asp-items="Model.IncidentSubCat1" id="subcat1">
+                <option value="">Please select</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="inctypescat3">Category</label>
+            <select class="form-control" asp-for="inctypescat1" asp-items="Model.IncidentSubCat2" id="subcat2">
+                <option value="">Please select</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="inctypescat4">Sub Category</label>
+            <select class="form-control" asp-for="inctypescat2" asp-items="Model.IncidentSubCat3" id="subcat3">
+                <option value="">Please select</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="ptenumber" id="ptenumberLabel">No Incident Selected</label><br />
+            <input type="text" class="form-control" asp-for="ptenumber" id="ptenumberInput">
+        </div>
+        <div class="form_grid_item">
+            <label for="ptenumber">First Name</label><br />
+            <input type="text" class="form-control" asp-for="ptename" id="ptenameInput">
+        </div>
+        <div class="form_grid_item">
+            <label for="ptesurname">Surname</label><br />
+            <input type="text" class="form-control" asp-for="ptesurname" id="ptesurnameInput">
+        </div>
+        <div class="form_grid_item">
+            <label for="ptetitle">Title</label>
+            <select class="form-control" asp-for="ptetitle" id="ptetitleInput">
+                <option value="">Title</option>
+                <option>Mr</option>
+                <option>Mrs</option>
+                <option>Ms</option>
+                <option>Miss</option>
+                <option>Mast</option>
+                <option>Mx</option>
+                <option>Mz</option>
+                <option>Dr</option>
+                <option>Prof</option>
+                <option>Hon</option>
+                <option>Rev</option>
+                <option>Other</option>
+            </select>
+        </div>
+        <div class="form_grid_item_span2">
+            <div id="uploadButtonContainer" style="display:none; margin-top: 10px;">
+                <div id="addendumUploadSection" style="margin-top: 10px;">
+                    <label for="addendumType">Addendum Type</label>
+                    <select class="form-control" id="addendumType" name="addendumType" onchange="toggleOtherInput()">
+                        <option value="">Please select</option>
+                        <option value="Prescription chart">1. Prescription chart</option>
+                        <option value="Antibiotic stewardship chart">2. Antibiotic stewardship chart</option>
+                        <option value="Clinical notes">3. Clinical notes</option>
+                        <option value="Vital sign chart">4. Vital sign chart</option>
+                        <option value="Other">5. Other</option>
+                    </select>
+                    <input type="hidden" asp-for="qarid" />
+                    <input type="text" id="otherAddendumText" name="otherAddendum" style="display:none; margin-top:10px;" class="form-control" placeholder="Please specify" />
+                    <input type="file" id="uploadAddendum" name="addendumFile" class="form-control mt-2" />
+                    <button type="button" class="btn btn-success mt-2" onclick="uploadAddendumFile()">Upload Addendum</button>
+                </div>
+            </div>
+        </div>
+        <div class="form_grid_item_span2">
+            <div id="uploadedFilesContainer" class="mt-3"></div>
+
+            <div id="addendumList" class="addendum-section">
+        
+            </div>
+
+        </div>
+
+
+
+        
+        <div class="form_grid_item_span4">Section C: When It Occurred and Investigated By.</div>
+        <div class="form_grid_item">
+            <label for="priority">Severity</label>
+            <select class="form-control" asp-for="priority" id="priority">
+                <option value="">Please Select</option>
+                <option value="" selected>Select Severity</option>
+                <option value="Minor">Minor</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Major">Major</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="incidentdate">Incident Date</label><br />
+            <input type="date" class="form-control" asp-for="incidentdate" id="incidentdate">
+        </div>
+        <div class="form_grid_item">
+            <label for="incidenttime">Incident Time</label><br />
+            <input type="time" class="form-control" asp-for="incidenttime" id="incidenttime">
+        </div>
+        <div class="form_grid_item">
+            <label for="datereported">Incident Date Reported</label><br />
+            <input type="date" class="form-control" asp-for="datereported" id="datereported">
+        </div>
+        
+        <div class="form_grid_item">
+            <label for="invesitgatedby">Investigated By</label>
+            <select class="form-control" asp-for="invesitgatedby" asp-items="Model.Investigators" id="invesitgatedby" >
+                <option value="">Please Select</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="Name">Name</label><br />
+            <input type="text" class="form-control" id="Name" readonly>
+        </div>
+        <div class="form_grid_item">
+            <label for="Surname">Surname</label><br />
+            <input type="text" class="form-control" id="Surname" readonly>
+        </div>
+        <div class="form_grid_item">
+            <label for="Email">Email</label><br />
+            <input type="text" class="form-control" id="Email" readonly>
+        </div>
+        
+        
+        <div class="form_grid_item_span4">Section D: Describe the Incident </div>
+        <div class="form_grid_item">
+            <label for="dptSelect">Staff Department</label>
+            <select class="form-control" asp-for="assignedcat" id="dptSelect">
+                <option value="">Please Select</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <label for="dptDetails">Staff Category</label>
+            <select class="form-control" asp-for="assignedstaff" id="dptDetails">
+                <option value="">Please Select</option>
+            </select>
+        </div>
+        <div class="form_grid_item">
+            <div class="form-check">
+                <br />
+
+                <input type="checkbox" asp-for="IsDayShift" class="form_check"  id="isDayShift" />
+                <label for="isDayShift">Day Shift</label>
+            </div>
+        </div>
+        <div class="form_grid_item">
+            <div class="form-check">
+                <br />
+                <input type="checkbox" asp-for="IsNightShift" class="form_check" id="IsNightShift" />
+                <label for="IsNightShift">Night Shift</label>
+
+            </div>
+        </div>
+        <div class="form_grid_item_span4">Section E: Investigations / Description / Root Causes  </div>
+        <div class="form_grid_item_span2">
+            <label>Short Initial Description</label><br>
+            <textarea asp-for="description" class="form_textarea"></textarea>
+        </div>
+        <div class="form_grid_item_span2" style="padding-left:20px;font-size:1rem;">
+            <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
+            <br />
+            <table style="width:100%;padding:6px;border-collapse:collapse;">
+                <tr>
+                    <td style="width:180px;border-bottom:1px solid lightgrey;">Add Investigation</td>
+                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="investcheck" value="Y" onclick="textAreaShow1('inline');" class="form_radio"> </td>
+                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="investcheck" value="N" onclick="textAreaShow1('none');" class="form_radio" checked></td>
+
+                </tr>
+                <tr>
+                    <td style="border-bottom:1px solid lightgrey;">Add Root Cause </td>
+                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="rootcheck" value="Y" onclick="textAreaShow2('inline');" class="form_radio"></td>
+                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="rootcheck" value="N" onclick="textAreaShow2('none');" class="form_radio" checked></td>
+
+                </tr>
+                <tr>
+                    <td style="border-bottom:1px solid lightgrey;">Add Near Root Cause </td>
+                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="nearrootcheck" value="Y" onclick="textAreaShow3('inline');" class="form_radio"></td>
+                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="nearrootcheck" value="N" onclick="textAreaShow3('none');" class="form_radio" checked></td>
+
+                </tr>
+            </table>
+        </div>
+        <div class="form_grid_item_span4_nc" id="textArea1" style="display:none;">
+            <label>
+                Investigation <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
+            </label><br>
+            <textarea asp-for="investigation" class="form_textarea"></textarea>
+        </div>
+        <div class="form_grid_item_span4_nc" id="textArea2" style="display:none;">
+            <label>Root Cause</label><br>
+            <textarea asp-for="summary" class="form_textarea"></textarea>
+        </div>
+        <div class="form_grid_item_span4_nc" id="textArea3" style="display:none;">
+            <label>Add Near Root Cause</label><br>
+            <textarea asp-for="summary2" class="form_textarea"></textarea>
+        </div>
+        <div class="form_grid_item_span4">Section F: Call to Action </div>
+        <div class="form_grid_item_span3_nc">
+            <label>Corrective Action</label><br>
+            <textarea asp-for="correctaction" class="form_textarea"></textarea>
+            <br />
+            <label>Preventative Action</label><br>
+            <textarea asp-for="preventaction" class="form_textarea"></textarea>
+        </div>
+        <div class="form_grid_item">
+            Status<br />
+            @if (Model.AccessLevel == "admin")
+            {
+                <table style="width:100%;padding:6px;height:100%;">
+                    <tr>
+                        <td style="border-bottom:1px solid lightgrey;width:120px;height:30px;">Open</td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">
+                            <input type="radio" name="status" value="open" class="form_radio" onclick="textAreaShow5('none');textAreaShow4('none');" checked>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">On Hold</td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="hold" onclick="textAreaShow4('inline');textAreaShow5('none');" class="form_radio"></td>
+                    </tr>
+                    <tr>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">Close</td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="closed" onclick="textAreaShow5('inline');textAreaShow4('none');" class="form_radio"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;"><button class="btn btn-danger">Delete this Incident</button></td>
+                    </tr>
+                </table>
+            }
+            else
+            {
+                <table style="width:100%;padding:6px;height:100%;">
+                    <tr>
+                        <td style="border-bottom:1px solid lightgrey;width:120px;height:30px;">Open</td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">
+                            <input type="radio" name="status" value="open" class="form_radio" onclick="textAreaShow4('none');" checked>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">On Hold</td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="hold" onclick="textAreaShow4('inline');" class="form_radio"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;">QA or IPC may close off an Incident</td>
+                    </tr>
+                </table>
+            }
+        </div>
+        <div class="form_grid_item_span3_nc">
+            <div class="form_grid_item_span4_nc" id="textArea4" style="display:none;">
+                <label>Brief Description as to why the Incident is being put on hold.</label><br>
+                <textarea asp-for="onholddesc" class="form_textarea"></textarea>
+                <input type="hidden" asp-for="onholddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input type="text" asp-for="onholddesctime" value="@DateTime.Now.ToString("HH:mm")" />
+            </div>
+        </div>
+        <div class="grid_item"></div>
+        <div class="form_grid_item_span3_nc">
+            <div class="form_grid_item_span4_nc" id="textArea5" style="display:none;">
+                <label>Closing Description.</label><br>
+                <textarea asp-for="closeddesc" class="form_textarea"></textarea>
+                <input type="hidden" asp-for="closeddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input type="text" asp-for="closeddesctime" value="@DateTime.Now.ToString("HH:mm")" />
+            </div>
+        </div>
+        <div class="grid_item">
+            <input type="hidden" id="qarid" value="@Model.QarId" />
+
+            <div class="form-group mt-3">
+                <label for="fileUpload">Upload Attachment</label>
+                <input type="file" id="fileUpload" class="form-control" />
+                <button type="button" class="btn btn-primary mt-2" onclick="uploadSimpleAttachment()">📤 Upload Attachment</button>
+            </div>
+
+
+            <div class="uploaded-file-entry">
+                @if (Model.Attachments != null && Model.Attachments.Any())
+                {
+                    foreach (var item in Model.Attachments)
+                    {
+                        <div class="uploaded-file-entry">
+                            <p><strong>📁 Folder:</strong> @item.Foldername</p>
+                            <p><strong>📎 File:</strong> @item.Attachment</p>
+                            <div class="btn-group">
+                                <a href="/uploads/@item.Foldername/@item.Attachment"
+                                   class="btn btn-sm btn-primary"
+                                   download="@item.Addendums">
+                                    ⬇️ Download
+                                </a>
+                                <button class="btn btn-sm btn-danger ms-2" onclick="deleteAttachment('@item.Attachment')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                            <hr />
+                        </div>
+                    }
+                }
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+        <div class="form_grid_item_span4_nc">
+            @if (Model.AccessLevel == "admin")
+            {
+                <div class="alert alert-success">Welcome Admin! Full access granted.</div>
+
+            }
+            else
+            {
+                <p class="text-muted">Standard access - admin sections are hidden.</p>
+            }
+
+        </div>
+        <script>
+            function textAreaShow1(onOff) {
+            document.getElementById('textArea1').style.display = onOff;
+            }
+
+            function textAreaShow2(onOff) {
+            document.getElementById('textArea2').style.display = onOff;
+            }
+
+            function textAreaShow3(onOff) {
+            document.getElementById('textArea3').style.display = onOff;
+            }
+
+            function textAreaShow4(onOff) {
+            document.getElementById('textArea4').style.display = onOff;
+            }
+
+            function textAreaShow5(onOff) {
+            document.getElementById('textArea5').style.display = onOff;
+            }
+        </script>
+        <div class="form_grid_item_span4_nc">
+            <button type="submit" class="btn btn-primary mt-4">Update Incident</button>
+       </div>
+    </section>
+
+
+<input type="hidden" id="existingCat1" value="@Model.pte" />
+<input type="hidden" id="existingCat2" value="@Model.incidenttype" />
+<input type="hidden" id="existingCat3" value="@Model.inctypescat1" />
+<input type="hidden" id="existingCat4" value="@Model.inctypescat2" />
+</form>
+
+
+@* <!---SECTION A---> *@
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const hospitalSelect = document.getElementById("hospitalid");
+            const wardSelect = document.getElementById("affectedward");
+
+            hospitalSelect.addEventListener("change", function () {
+                const hospitalId = this.value;
+
+                if (hospitalId) {
+                    wardSelect.disabled = false;
+                    wardSelect.innerHTML = '<option value="">Please Select</option>';
+
+                    fetch(`/Form/GetDepartmentsByHospital?hospitalId=${hospitalId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.forEach(dept => {
+                                const opt = document.createElement("option");
+                                opt.value = dept.value;
+                                opt.text = dept.text;
+                                wardSelect.appendChild(opt);
+                            });
+                        })
+                        .catch(err => {
+                            console.error("Failed to load departments", err);
+                        });
+                } else {
+                    wardSelect.disabled = true;
+                    wardSelect.innerHTML = '<option value="">Please Select</option>';
+                }
+            });
+        });
+    </script>
+
+    @* <!---SECTION B---> *@
+    <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        const cat = document.getElementById("cat");
+        const sub1 = document.getElementById("subcat1");
+        const sub2 = document.getElementById("subcat2");
+        const sub3 = document.getElementById("subcat3");
+
+        const existingCat1 = document.getElementById("existingCat1")?.value;
+        const existingCat2 = document.getElementById("existingCat2")?.value;
+        const existingCat3 = document.getElementById("existingCat3")?.value;
+        const existingCat4 = document.getElementById("existingCat4")?.value;
+
+        // 1. Load categories
+        const catResponse = await fetch("/Form/GetIncidentCategories");
+        const catData = await catResponse.json();
+        cat.innerHTML = '<option value="">Please select</option>';
+
+        catData.forEach(item => {
+            const option = new Option(item.text, item.value);
+            if (item.value === existingCat1) option.selected = true;
+            cat.appendChild(option);
+        });
+
+        // 2. If edit mode, trigger load for subcat1
+        if (existingCat1) {
+            await loadSub1(existingCat1);
+        }
+
+        if (existingCat2) {
+            await loadSub2(existingCat2);
+        }
+
+        if (existingCat3) {
+            await loadSub3(existingCat3);
+        }
+
+        // 3. Change events
+        cat.addEventListener("change", function () {
+            loadSub1(this.value);
+        });
+
+        sub1.addEventListener("change", function () {
+            loadSub2(this.value);
+        });
+
+        sub2.addEventListener("change", function () {
+            loadSub3(this.value);
+        });
+
+        // Helpers
+        async function loadSub1(catVal) {
+            sub1.disabled = true;
+            sub1.innerHTML = '<option value="">Please select</option>';
+
+            const res = await fetch(`/Form/GetSubCategory1?cat=${encodeURIComponent(catVal)}`);
+            const data = await res.json();
+
+            data.forEach(item => {
+                const option = new Option(item.text, item.value);
+                if (item.value === existingCat2) option.selected = true;
+                sub1.appendChild(option);
+            });
+
+            sub1.disabled = false;
+        }
+
+        async function loadSub2(sub1Val) {
+            sub2.disabled = true;
+            sub2.innerHTML = '<option value="">Please select</option>';
+
+            const res = await fetch(`/Form/GetSubCategory2?sub1=${encodeURIComponent(sub1Val)}`);
+            const data = await res.json();
+
+            data.forEach(item => {
+                const option = new Option(item.text, item.value);
+                if (item.value === existingCat3) option.selected = true;
+                sub2.appendChild(option);
+            });
+
+            sub2.disabled = false;
+        }
+
+        async function loadSub3(sub2Val) {
+            sub3.disabled = true;
+            sub3.innerHTML = '<option value="">Please select</option>';
+
+            const res = await fetch(`/Form/GetSubCategory3?sub2=${encodeURIComponent(sub2Val)}`);
+            const data = await res.json();
+
+            data.forEach(item => {
+                const option = new Option(item.text, item.value);
+                if (item.value === existingCat4) option.selected = true;
+                sub3.appendChild(option);
+            });
+
+            sub3.disabled = false;
+        }
+    });
+</script>
+
+
+
+    <script>
+        $(document).ready(function () {
+
+          function loadSubCategory(level, selectedValue, targetDropdownId, selectedOption = "") {
+            const $dropdown = $(`#${targetDropdownId}`);
+
+            if (!selectedValue) {
+                $dropdown.html('<option value="">No category</option>').prop('disabled', true);
+                return;
+            }
+
+            let endpoint = "";
+
+            if (level === 1) endpoint = "/Form/GetSubCategory1";
+            else if (level === 2) endpoint = "/Form/GetSubCategory2";
+            else if (level === 3) endpoint = "/Form/GetSubCategory3";
+
+            $.ajax({
+                url: endpoint,
+                type: 'GET',
+                data: level === 1
+                    ? { cat: selectedValue }
+                    : level === 2
+                        ? { sub1: selectedValue }
+                        : { sub2: selectedValue },
+                success: function (data) {
+                    if (data.length > 0) {
+                        let options = '<option value="">Please select</option>';
+                        data.forEach(function (item) {
+                            const isSelected = item.value === selectedOption ? 'selected' : '';
+                            options += `<option value="${item.value}" ${isSelected}>${item.text}</option>`;
+                        });
+                        $dropdown.html(options).prop('disabled', false);
+                    } else {
+                        $dropdown.html('<option value="">No category</option>').prop('disabled', true);
+                    }
+                },
+                error: function () {
+                    alert("Failed to load subcategories");
+                    $dropdown.html('<option value="">No category</option>').prop('disabled', true);
+                }
+            });
+        }
+
+
+
+            // === Event Handlers for Dropdown Changes ===
+            $('#cat').change(function () {
+                const cat = $(this).val();
+
+
+        // update label dynamically
+        if (!cat || cat === 'No Category') {
+            // Disable input and set default label
+            $('#ptenumberInput').val('').prop('disabled', true);
+            $('#ptenameInput').val('').prop('disabled', true);
+            $('#ptesurnameInput').val('').prop('disabled', true);
+            $('#ptetitleInput').val('').prop('disabled', true);
+            $('#ptenumberLabel').text("No Incident Selected");
+        } else {
+            // Enable input
+            $('#ptenumberInput').prop('disabled', false);
+            $('#ptenameInput').prop('disabled', false);
+            $('#ptesurnameInput').prop('disabled', false);
+            $('#ptetitleInput').prop('disabled', false);
+
+            // Set label according to category
+            if (cat === "Patient") {
+                $('#ptenumberLabel').text("Clinic Manager Patient Number");
+            } else if (cat === "Employee") {
+                $('#ptenumberLabel').text("Employee Number");
+            } else if (cat === "Visitor" || cat === "Customer") {
+                $('#ptenumberLabel').text("Location");
+            } else if (cat === "Supplier / Service Provider") {
+                $('#ptenumberLabel').text("Company Name");
+            } else if (cat === "Doctor / Practitioner") {
+                $('#ptenumberLabel').text("Practice?");
+            } else if (cat === "Property / Environment") {
+                $('#ptenumberLabel').text("Injured/Affected Person (Environment)");
+            } else {
+                $('#ptenumberLabel').text("Please Select");
+            }
+        }
+
+                loadSubCategory(1, cat, 'subcat1');
+                $('#subcat2').html('<option value="">No Category</option>');
+                $('#subcat3').html('<option value="">No Category</option>');
+            });
+
+            $('#subcat1').change(function () {
+                const subcat1 = $(this).val();
+                loadSubCategory(2, subcat1, 'subcat2');
+                $('#subcat3').html('<option value="">No Category</option>');
+            });
+
+            $('#subcat2').change(function () {
+                const subcat2 = $(this).val();
+                loadSubCategory(3, subcat2, 'subcat3');
+            });
+
+            // === Preload for Edit ===
+            const selectedCat = '@Model.inctypescat1';
+            const selectedSub1 = '@Model.inctypescat2';
+            const selectedSub2 = '@Model.inctypescat3';
+            const selectedSub3 = '@Model.inctypescat4';
+
+            if (selectedCat) {
+                $('#cat').val(selectedCat);
+                loadSubCategory(1, selectedCat, 'subcat1', selectedSub1);
+            }
+
+            if (selectedSub1) {
+                loadSubCategory(2, selectedSub1, 'subcat2', selectedSub2);
+            }
+
+            if (selectedSub2) {
+                loadSubCategory(3, selectedSub2, 'subcat3', selectedSub3);
+            }
+
+        if (!selectedCat || selectedCat === 'No Category') {
+            $('#ptenumberInput').val('').prop('disabled', true);
+            $('#ptenameInput').val('').prop('disabled', true);
+            $('#ptesurnameInput').val('').prop('disabled', true);
+            $('#ptetitleInput').val('').prop('disabled', true);
+            $('#ptenumberLabel').text("No Incident Selected");
+        } else {
+            $('#ptenumberInput').prop('disabled', false);
+            $('#ptenameInput').prop('disabled', false);
+            $('#ptesurnameInput').prop('disabled', false);
+            $('#ptetitleInput').prop('disabled', false);
+
+            if (selectedCat === "Patient") {
+                $('#ptenumberLabel').text("Clinic Manager Patient Number");
+            } else if (selectedCat === "Employee") {
+                $('#ptenumberLabel').text("Employee Number");
+            } else if (selectedCat === "Visitor" || selectedCat === "Customer") {
+                $('#ptenumberLabel').text("Location");
+            } else if (selectedCat === "Supplier / Service Provider") {
+                $('#ptenumberLabel').text("Company Name");
+            } else if (selectedCat === "Doctor / Practitioner") {
+                $('#ptenumberLabel').text("Practice?");
+            } else if (selectedCat === "Property / Environment") {
+                $('#ptenumberLabel').text("Injured/Affected Person (Environment)");
+            } else {
+                $('#ptenumberLabel').text("No Incident Selected");
+            }
+        }
+        });
+    </script>
+
+
+    @* //SECTION C *@
+
+    @{
+        var selectedInvestigator = Model?.invesitgatedby ?? "";
+    }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const hospitalSelect = document.getElementById("hospitalid");
+            const investigatedBySelect = document.getElementById("invesitgatedby");
+
+
+            function loadInvestigators(hospitalId, selectedValue = "") {
+                if (hospitalId) {
+                    investigatedBySelect.disabled = false;
+                    investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
+
+                    fetch(`/Form/GetInvestigators?hospitalId=${hospitalId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.forEach(user => {
+                                const opt = document.createElement("option");
+                                opt.value = user.value;
+                                opt.text = user.text;
+                                investigatedBySelect.appendChild(opt);
+                            });
+
+                            // Set previously selected value
+                            if (selectedValue) {
+                                investigatedBySelect.value = selectedValue;
+                                fetchInvestigatorDetails(selectedValue); // fetch details
+                            }
+                        });
+                }
+            }
+
+            function fetchInvestigatorDetails(loginname) {
+                fetch(`/Form/GetInvestigatorDetails?loginname=${loginname}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data) {
+                            document.getElementById('Name').value = data.username || '';
+                            document.getElementById('Surname').value = data.surname || '';
+                            document.getElementById('Email').value = data.email || '';
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById('Name').value = '';
+                        document.getElementById('Surname').value = '';
+                        document.getElementById('Email').value = '';
+                    });
+            }
+
+            // === INITIAL LOAD ===
+            const selectedHospital = hospitalSelect.value;
+            const selectedInvestigator = '@Model.invesitgatedby';
+
+            if (selectedHospital) {
+                loadInvestigators(selectedHospital, selectedInvestigator);
+            }
+
+            // === ON HOSPITAL CHANGE ===
+            hospitalSelect.addEventListener("change", function () {
+                loadInvestigators(this.value);
+            });
+
+            // === ON INVESTIGATOR CHANGE ===
+            investigatedBySelect.addEventListener("change", function () {
+                fetchInvestigatorDetails(this.value);
+            });
+        });
+    </script>
+
+
+    @* SECTION D *@
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const dptSelect = document.getElementById("dptSelect");
+            const dptDetails = document.getElementById("dptDetails");
+
+            // Load department list from DB
+            fetch("/Form/GetEmp")
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const opt = document.createElement("option");
+                        opt.value = item.value;
+                        opt.text = item.text;
+                        dptSelect.appendChild(opt);
+                    });
+                });
+
+            // On department selection change
+            dptSelect.addEventListener("change", function () {
+                const selectedDpt = this.value;
+
+                // Clear and disable second dropdown
+                dptDetails.innerHTML = '<option value="">Please Select</option>';
+                dptDetails.disabled = true;
+
+                if (!selectedDpt) return;
+
+                // Get staff categories for selected department
+                fetch(`/Form/GetEmpDetails?dpt=${encodeURIComponent(selectedDpt)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(item => {
+                                const opt = document.createElement("option");
+                                opt.value = item.value;
+                                opt.text = item.text;
+                                dptDetails.appendChild(opt);
+                            });
+                            dptDetails.disabled = false;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error fetching staff categories:", err);
+                    });
+            });
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const subcat1 = document.getElementById('subcat1');
+            const uploadContainer = document.getElementById('uploadButtonContainer');
+
+            if (!subcat1 || !uploadContainer) return;
+
+            const checkValue = () => {
+                const selectedVal = subcat1.options[subcat1.selectedIndex]?.text?.trim().toLowerCase();
+                if (selectedVal === 'falling') {
+                    uploadContainer.style.display = 'block';
+                } else {
+                    uploadContainer.style.display = 'none';
+                }
+            };
+
+            // In case you're enabling it dynamically
+            subcat1.addEventListener('change', checkValue);
+
+            // Optional: check once after delay (for dynamically loaded data)
+            setTimeout(checkValue, 500);
+        });
+    </script>
+
+
+    <script>
+        document.getElementById("addendumType").addEventListener("change", function () {
+            const selected = this.value;
+            document.getElementById("otherAddendumText").style.display = selected === "Other" ? "block" : "none";
+        });
+    </script>
+
+
+    <script>
+        function toggleOtherInput() {
+            const addendumType = document.getElementById("addendumType").value;
+            const otherInput = document.getElementById("otherAddendumText");
+            otherInput.style.display = (addendumType === "Other") ? "block" : "none";
+        }
+    </script>
+
+
+
+    @* <script>
+
+        let uploadedFilenames = [];
+
+        function uploadAddendumFile() {
+            const fileInput = document.getElementById('uploadAddendum');
+            const file = fileInput.files[0];
+            const criteria = document.getElementById('subcat1').value;
+            let addendumType = document.getElementById('addendumType').value;
+
+            // Handle "Other" case
+            if (addendumType === "Other") {
+                const otherText = document.getElementById('otherAddendumText').value.trim();
+                if (!otherText) {
+                    alert("Please specify the 'Other' addendum type.");
+                    return;
+                }
+                addendumType = otherText;
+            }
+
+            if (!file || !criteria || !addendumType) {
+                alert("Please complete all fields before uploading.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("addendumFile", file);
+            formData.append("criteria", criteria);
+            formData.append("addendumType", addendumType);
+
+            fetch('/Form/UploadAddendum', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error("Upload failed: " + errorText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+
+
+                //HERE NA
+                uploadedFilenames.push(data.attachment);
+
+                //  Append to uploaded file list using returned attachment name
+                const fileList = document.getElementById('uploadedFilesContainer');
+                const item = document.createElement('div');
+                item.classList.add('uploaded-file-item');
+                item.innerHTML = `
+                    <div style="margin-bottom: 5px;">
+                        <strong>${addendumType}</strong> -
+                        (Criteria: ${criteria})
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="deleteAddendum('${data.attachment}')">Delete</button>
+                        <span style="color:green;">Uploaded</span>
+                    </div>
+                `;
+                fileList.appendChild(item);
+
+                // Clear inputs
+                fileInput.value = "";
+                document.getElementById('addendumType').value = "";
+                document.getElementById('otherAddendumText').value = "";
+                document.getElementById('otherAddendumText').style.display = 'none';
+            })
+            .catch(err => {
+                alert("Error uploading file: " + err.message);
+            });
+        }
+    </script> *@
+
+    <script>
+
+        let uploadedFilenames = [];
+
+        function uploadAddendumFile() {
+            const fileInput = document.getElementById('uploadAddendum');
+            const file = fileInput.files[0];
+            const criteria = document.getElementById('subcat1').value;
+            let addendumType = document.getElementById('addendumType').value;
+
+            // Get QARID from input or fallback
+            const qarid = document.querySelector('[name="qarid"]')?.value?.trim() || "0";
+
+            // Handle "Other" case
+            if (addendumType === "Other") {
+                const otherText = document.getElementById('otherAddendumText').value.trim();
+                if (!otherText) {
+                    alert("Please specify the 'Other' addendum type.");
+                    return;
+                }
+                addendumType = otherText;
+            }
+
+            if (!file || !criteria || !addendumType) {
+                alert("Please complete all fields before uploading.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("addendumFile", file);
+            formData.append("criteria", criteria);
+            formData.append("addendumType", addendumType);
+            formData.append("qarid", qarid); //  include qarid always
+
+            fetch('/Form/UploadAddendum', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error("Upload failed: " + errorText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+
+                uploadedFilenames.push(data.attachment);
+
+                const fileList = document.getElementById('uploadedFilesContainer');
+                const item = document.createElement('div');
+                item.classList.add('uploaded-file-item');
+                item.innerHTML = `
+                    <div style="margin-bottom: 5px;">
+                        <strong>${addendumType}</strong> -
+                        (Criteria: ${criteria})
+                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="deleteAddendum('${data.attachment}')">Delete</button>
+                        <span style="color:green;">Uploaded</span>
+                    </div>
+                `;
+                fileList.appendChild(item);
+
+                // Clear inputs
+                fileInput.value = "";
+                document.getElementById('addendumType').value = "";
+                document.getElementById('otherAddendumText').value = "";
+                document.getElementById('otherAddendumText').style.display = 'none';
+            })
+            .catch(err => {
+                alert("Error uploading file: " + err.message);
+            });
+        }
+
+    </script>
+
+
+    <script>
+        function deleteAddendum(attachment) {
+            if (!confirm("Are you sure you want to delete this addendum?")) return;
+
+            const formData = new FormData();
+            formData.append("attachment", attachment);
+
+            fetch('/Form/DeleteAddendum', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+                return response.text();
+            })
+            .then(message => {
+                alert(message);
+
+                //  Remove the item from DOM
+                const items = document.querySelectorAll('.uploaded-file-item');
+                for (const item of items) {
+                    if (item.innerHTML.includes(attachment)) {
+                        item.remove();
+                        break;
+                    }
+                }
+            })
+            .catch(err => {
+                alert("Error deleting file: " + err.message);
+            });
+        }
+    </script>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const form = document.getElementById("incidentForm");
+
+          form.addEventListener("submit", function(event) {
+            // Remove any existing hidden inputs to avoid duplicates
+            const existingInputs = form.querySelectorAll('input[name="UploadedFiles"]');
+            existingInputs.forEach(input => input.remove());
+
+            // Grab all uploaded filenames from the uploaded files container
+            const uploadedFilesContainer = document.getElementById('uploadedFilesContainer');
+            if (!uploadedFilesContainer) return; // safety check
+
+            const uploadedItems = uploadedFilesContainer.querySelectorAll('.uploaded-file-item');
+            uploadedItems.forEach(item => {
+              // We store the filename in the button's onclick attribute, let's extract it
+              // The delete button onclick looks like: onclick="deleteAddendum('filename')"
+              const deleteBtn = item.querySelector('button.btn-danger');
+              if (!deleteBtn) return;
+
+              // Extract filename from onclick attribute
+              const onclickAttr = deleteBtn.getAttribute('onclick');
+              const match = onclickAttr.match(/deleteAddendum\('([^']+)'\)/);
+              if (match && match[1]) {
+                const filename = match[1];
+
+                // Create hidden input with the filename
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'UploadedFiles';  // This should match your FormModel List<string> property name
+                hiddenInput.value = filename;
+
+                form.appendChild(hiddenInput);
+              }
+            });
+          });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const form = document.getElementById("incidentForm");
+
+          form.addEventListener("submit", function(event) {
+            // Remove any existing hidden inputs to avoid duplicates
+            const existingInputs = form.querySelectorAll('input[name="UploadedFiles"]');
+            existingInputs.forEach(input => input.remove());
+
+            // Grab all uploaded filenames from the uploaded files container
+            const uploadedFilesContainer = document.getElementById('uploadedFilesContainer');
+            if (!uploadedFilesContainer) return; // safety check
+
+            const uploadedItems = uploadedFilesContainer.querySelectorAll('.uploaded-file-item');
+            uploadedItems.forEach(item => {
+              // We store the filename in the button's onclick attribute, let's extract it
+              // The delete button onclick looks like: onclick="deleteAddendum('filename')"
+              const deleteBtn = item.querySelector('button.btn-danger');
+              if (!deleteBtn) return;
+
+              // Extract filename from onclick attribute
+              const onclickAttr = deleteBtn.getAttribute('onclick');
+              const match = onclickAttr.match(/deleteAddendum\('([^']+)'\)/);
+              if (match && match[1]) {
+                const filename = match[1];
+
+                // Create hidden input with the filename
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'UploadedFiles';  // This should match your FormModel List<string> property name
+                hiddenInput.value = filename;
+
+                form.appendChild(hiddenInput);
+              }
+            });
+          });
+        });
+    </script>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/Form/GetEmp')
+                .then(response => {
+                    if (!response.ok) throw new Error("404 - Not found");
+                    return response.json();
+                })
+                .then(data => {
+                    const dptSelect = document.getElementById("dptSelect");
+                    dptSelect.innerHTML = '<option value="">Please Select</option>';
+                    data.forEach(item => {
+                        const option = new Option(item.text, item.value);
+                        dptSelect.appendChild(option);
+                    });
+
+                    const selectedValue = '@Model.assignedcat';
+                    if (selectedValue) {
+                        dptSelect.value = selectedValue;
+                    }
+                })
+                .catch(error => console.error("Error loading departments:", error));
+        });
+    </script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const dptSelect = document.getElementById("dptSelect");
+            const dptDetails = document.getElementById("dptDetails");
+
+            // Load departments initially
+            fetch('/Form/GetEmp') // replace with actual controller
+                .then(response => response.json())
+                .then(data => {
+                    dptSelect.innerHTML = '<option value="">Please Select</option>';
+                    data.forEach(item => {
+                        const option = new Option(item.text, item.value);
+                        dptSelect.appendChild(option);
+                    });
+
+                    // Set selected value if editing
+                    const selectedDept = '@Model.assignedcat';
+                    if (selectedDept) {
+                        dptSelect.value = selectedDept;
+                        dptSelect.dispatchEvent(new Event('change')); // trigger cascade
+                    }
+                });
+
+            // Load staff categories based on selected department
+            dptSelect.addEventListener("change", function () {
+                const selectedDept = this.value;
+                if (!selectedDept) {
+                    dptDetails.innerHTML = '<option value="">Please Select</option>';
+                    return;
+                }
+
+                fetch(`/Form/GetEmpDetails?dpt=${encodeURIComponent(selectedDept)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        dptDetails.innerHTML = '<option value="">Please Select</option>';
+                        data.forEach(item => {
+                            const option = new Option(item.text, item.value);
+                            dptDetails.appendChild(option);
+                        });
+
+                        // Set selected staff if editing
+                        const selectedStaff = '@Model.assignedstaff';
+                        if (selectedStaff) {
+                            dptDetails.value = selectedStaff;
+                        }
+                    });
+            });
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function () {
+            $.get("/Form/GetEmp", function (data) {
+                $('#dptSelect').append(data.map(x => `<option value="${x.value}">${x.text}</option>`));
+            });
+
+            $('#dptSelect').on('change', function () {
+                var selectedDpt = $(this).val();
+                $('#dptDetails').empty().append('<option value="">Loading...</option>');
+
+                $.get(`/Form/GetEmpDetails?dpt=${selectedDpt}`, function (data) {
+                    $('#dptDetails').empty().append(data.map(x => `<option value="${x.value}">${x.text}</option>`));
+                });
+            });
+        });
+    </script>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const uploadContainer = document.getElementById('addendumUploadSection'); // move this to the top
+
+        if (!uploadContainer || uploadContainer.style.display === 'none') {
+            console.log('Addendum upload not enabled, skipping addendum load');
+            return; // skip loading addendums completely
+        }
+
+            const qarid = document.getElementById("qarid")?.value;
+            console.log("QARID from input:", qarid);
+
+            if (!qarid) {
+                document.getElementById("addendumList").innerHTML = "<p>QARID is missing from input.</p>";
+                return;
+            }
+
+            fetch(`/Form/GetAddendumsByQarid?qarid=${qarid}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network error");
+                    return response.json();
+                })
+                .then(data => {
+                    const container = document.getElementById("addendumList");
+                    container.innerHTML = "";
+
+                    if (!data || data.length === 0) {
+                        container.innerHTML = "";
+                        return;
+                    }
+
+                            data.forEach(item => {
+            if (!item.attachment || !item.foldername || !item.addendums) return;
+
+            const div = document.createElement("div");
+            div.className = "addendum-entry";
+            div.innerHTML = `
+               <!--- <p style="display:hidden;"><strong>📁 Folder:</strong> ${item.foldername}</p>
+                <p><strong>📎 Attachment:</strong> ${item.attachment}</p>--->
+                <p><strong>${item.addendums}</strong>  ${item.foldername}</p>
+                <!---<p><strong>🧩 Criteria:</strong> ${item.criteria}  ${item.foldername}</p>--->
+                <div class="btn-group mt-2">
+        <a href="/uploads/${encodeURIComponent(item.attachment)}" class="btn btn-sm btn-primary"
+           download="${item.foldername}">
+           Download
+        </a>
+                    <button class="btn btn-sm btn-danger ms-2" onclick="softDeleteAddendum('${item.attachment}')">
+                        Delete
+                    </button>
+                </div>
+                <hr/>
+            `;
+            container.appendChild(div);
+        });
+
+                })
+                .catch(error => {
+                    console.error("Fetch failed:", error);
+                    document.getElementById("addendumList").innerHTML = "<p>Failed to load addendums.</p>";
+                });
+        });
+    </script>
+
+
+    <script>
+                function softDeleteAddendum(attachment) {
+            if (!confirm(`Are you sure you want to delete ${attachment}?`)) return;
+
+            fetch('/Form/DeleteAddendum2', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ attachment: attachment })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Delete failed");
+                return response.text();
+            })
+            .then(msg => {
+                alert("Deleted successfully.");
+                location.reload(); // Refresh the list
+            })
+            .catch(err => {
+                console.error("Soft delete failed:", err);
+                alert("Failed to delete.");
+            });
+        }
+
+
+    </script>
+
+    <script>
+        function uploadSimpleAttachment() {
+            const file = document.getElementById('fileUpload').files[0];
+            const qarid = document.getElementById('qarid').value;
+
+            if (!file || !qarid) {
+                alert("Please select a file and ensure QARID is available.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("qarid", qarid);
+
+            fetch('/Form/UploadBasicAttachment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.ok ? res.json() : Promise.reject("Upload failed"))
+            .then(data => {
+                alert("Upload successful: " + data.filename);
+                location.reload(); // optional
+            })
+            .catch(err => {
+                console.error("Error uploading:", err);
+                alert("Upload failed.");
+            });
+        }
+    </script>
+    <script>
+        function deleteAttachment(attachment) {
+            if (!confirm(`Are you sure you want to delete ${attachment}?`)) return;
+
+            const formData = new FormData();
+            formData.append("attachment", attachment);
+
+            fetch('/Form/DeleteAttachment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Delete failed");
+                return res.text();
+            })
+            .then(msg => {
+                alert("Deleted successfully.");
+                location.reload();
+            })
+            .catch(err => {
+                console.error("Delete failed:", err);
+                alert("Could not delete file.");
+            });
+        }
+    </script>
+
+
+}
