@@ -56,9 +56,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+
 
 app.UseSession();          // Must be before auth middleware
+
+app.UseRouting();
 
 app.UseAuthentication();
 

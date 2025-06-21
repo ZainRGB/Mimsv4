@@ -230,7 +230,7 @@ namespace Mimsv2.Controllers
             HttpContext.Session.SetString("loginhospitalid", hospitalid);
             HttpContext.Session.SetString("accessLevel", accessLevel);
             HttpContext.Session.SetString("department", department);
-
+           
 
             var claims = new List<Claim>
 {

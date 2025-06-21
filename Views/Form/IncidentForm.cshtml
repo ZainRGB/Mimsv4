@@ -3,23 +3,19 @@
     ViewData["Title"] = "Mims Incident Form";
 }
 
-<p>Session Access Level: <strong>@Model.AccessLevel</strong></p>
+@if (Model.AccessLevel == "admin")
+{
+    <div class="alert alert-success">Welcome Admin! Full access granted.</div>
+
+}
+else
+{
+    <p class="text-muted">Standard access - admin sections are hidden.</p>
+}
 
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
 }
-<p>Logged-in Hospital ID: <strong>@loginHospitalId</strong></p>
-
-<p>Model Hospital ID: <strong>@Model.hospitalid</strong></p>
-<p>Model Hospital: <strong>@Model.Hospital</strong></p>
-
-<p>loginName: @Context.Session.GetString("loginname")</p>
-<p>UserName: @Context.Session.GetString("username")</p>
-<p>Surname: @Context.Session.GetString("surname")</p>
-<p>Title: @Context.Session.GetString("titles")</p>
-<p>Email: @Context.Session.GetString("email")</p>
-<p>Department: @Context.Session.GetString("department")</p>
-
 
 <h3>New Incident Form</h3>
 Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
@@ -51,7 +47,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <select class="form-control" asp-for="inserthospitalid " asp-items="Model.Hospitals" id="hospitalid">
                     <option value="" selected disabled>Please Select</option>
                 </select>
-                <span asp-validation-for="hospitalid" class="text-danger"></span>
+				<span class="invalid-feedback" id="hospitalid-error">* Please select a Hospital</span>
             }else
             {
                 <label for="hospitalid">Hospital</label>
@@ -69,7 +65,8 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward" disabled>
                     <option value="" selected disabled>Please Select</option>
                 </select>
-                <span asp-validation-for="affectedward" class="text-danger"></span>
+                <span id="" class="text-danger" style="display:none;"></span>
+                <span class="invalid-feedback" id="affectedward-error">* Please select a Ward</span>
             }
             else
             {
@@ -91,6 +88,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <select class="form-control" asp-for="pte" id="cat">
                 <option value="" selected disabled>No Category</option>
             </select>
+            <span id="cat-error" class="text-danger" style="display:none;">* Incident Type Required</span>
         </div>
 
         <div class="form_grid_item">
@@ -183,10 +181,6 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         </div>
 
         <div class="form_grid_item_span2">
-            <!--
-            <div id="uploadedFilesContainer" style="margin-top: 10px;">
-            Uploaded files will be shown here
-            </div> -->
             <div id="uploadedFilesContainer" class="mt-3"></div>
         </div>
         <!---ADDENDUM UPLOADS--->
@@ -194,12 +188,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
         <!-- SECTION B END -->
 
-
-
-
         <!-- SECTION C -->
-
-
         <div class="form_grid_item_span4">Section C: When It Occurred</div>
 
         <div class="form_grid_item">
@@ -210,21 +199,24 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <option value="Moderate">Moderate</option>
                 <option value="Major">Major</option>
             </select>
-            <span asp-validation-for="priority" class="text-danger"></span>
+            <span class="invalid-feedback" id="priority-error">Please select a priority.</span>
         </div>
 
         <div class="form_grid_item">
             <label for="incidentdate">Incident Date</label><br />
             <input type="date" class="form-control" asp-for="incidentdate" id="incidentdate">
+            <span class="invalid-feedback" id="incidentdate-error">* Incident Date Required</span>
         </div>
         <div class="form_grid_item">
             <label for="incidenttime">Incident Time</label><br />
             <input type="time" class="form-control" asp-for="incidenttime" id="incidenttime">
+            <span class="invalid-feedback" id="incidenttime-error">* Incident Time Required</span>
         </div>
 
         <div class="form_grid_item">
             <label for="datereported">Incident Date Reported</label><br />
             <input type="date" class="form-control" asp-for="datereported" id="datereported">
+            <span class="invalid-feedback" id="datereported-error">* Date Reported Required</span>
         </div>
 
 
@@ -234,29 +226,30 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <select class="form-control" asp-for="invesitgatedby" id="invesitgatedby" disabled>
                 <option value="" selected disabled>Please Select</option>
             </select>
-            <span asp-validation-for="invesitgatedby" class="text-danger"></span>
+            <span class="invalid-feedback" id="invesitgatedby-error">* Required Field</span>
         </div>
 
         <div class="form_grid_item">
             <label for="Name">Name</label><br />
             <input type="text" class="form-control" id="Name" readonly>
+            
         </div>
 
         <div class="form_grid_item">
             <label for="Surname">Surname</label><br />
             <input type="text" class="form-control" id="Surname" readonly>
+          
         </div>
 
         <div class="form_grid_item">
             <label for="Email">Email</label><br />
             <input type="text" class="form-control" id="Email" readonly>
+            
         </div>
 
 
 
         <!-- SECTION D -->
-
-
         <div class="form_grid_item_span4">Section D: Staff Category </div>
 
         <div class="form_grid_item">
@@ -264,7 +257,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <select class="form-control" asp-for="assignedcat" id="dptSelect">
                 <option value="">Please Select</option>
             </select>
-            <span asp-validation-for="assignedcat" class="text-danger"></span>
+            <span class="invalid-feedback" id="dptSelect-error">* Required Field</span>
         </div>
 
         <div class="form_grid_item">
@@ -272,7 +265,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <select class="form-control" asp-for="assignedstaff" id="dptDetails">
                 <option value="">Please Select</option>
             </select>
-            <span asp-validation-for="assignedstaff" class="text-danger"></span>
+            <span class="invalid-feedback" id="dptDetails-error">* Required Field</span>
         </div>
 
         <div class="form_grid_item">
@@ -301,53 +294,10 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         </div>
 
         <div class="form_grid_item_span2" style="padding-left:20px;font-size:1rem;">
-            <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
-            <br />
-
-            <table style="width:100%;padding:6px;border-collapse:collapse;">
-
-                <tr>
-                    <td style="width:180px;border-bottom:1px solid lightgrey;">Add Investigation</td>
-                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="investcheck" value="Y" onclick="textAreaShow1('inline');" class="form_radio"> </td>
-                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="investcheck" value="N" onclick="textAreaShow1('none');" class="form_radio" checked></td>
-
-                </tr>
-
-                <tr>
-                    <td style="border-bottom:1px solid lightgrey;">Add Root Cause </td>
-                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="rootcheck" value="Y" onclick="textAreaShow2('inline');" class="form_radio"></td>
-                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="rootcheck" value="N" onclick="textAreaShow2('none');" class="form_radio" checked></td>
-
-                </tr>
-
-                <tr>
-                    <td style="border-bottom:1px solid lightgrey;">Add Near Root Cause </td>
-                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="nearrootcheck" value="Y" onclick="textAreaShow3('inline');" class="form_radio"></td>
-                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="nearrootcheck" value="N" onclick="textAreaShow3('none');" class="form_radio" checked></td>
-
-                </tr>
-            </table>
+           
         </div>
 
-        <div class="form_grid_item_span4_nc" id="textArea1" style="display:none;">
-            <label>
-                Investigation <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
-            </label><br>
-            <textarea asp-for="investigation" class="form_textarea"></textarea>
-        </div>
-
-        <div class="form_grid_item_span4_nc" id="textArea2" style="display:none;">
-            <label>Root Cause</label><br>
-            <textarea asp-for="summary" class="form_textarea"></textarea>
-        </div>
-
-        <div class="form_grid_item_span4_nc" id="textArea3" style="display:none;">
-            <label>Add Near Root Cause</label><br>
-            <textarea asp-for="summary2" class="form_textarea"></textarea>
-        </div>
-
-
-
+       
         <div class="form_grid_item_span4">Section F: Call to Action </div>
 
 
@@ -390,29 +340,8 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
 
         <div class="form_grid_item_span4_nc">
-            @if (Model.AccessLevel == "admin")
-            {
-                <div class="alert alert-success">Welcome Admin! Full access granted.</div>
 
-            }
-            else
-            {
-                <p class="text-muted">Standard access - admin sections are hidden.</p>
-            }
         </div>
-
-        <!---
-            <div class="form_grid_item_span4_nc">
-            <label>Root Cause</label><br>
-            <textarea asp-for="summary" class="form_textarea"></textarea>
-        </div>
-
-        <div class="form_grid_item_span4_nc">
-            <label>Near Root Cause</label><br>
-            <textarea asp-for="summary2" class="form_textarea"></textarea>
-        </div>
-        --->
-
 
         <script>
             function textAreaShow1(onOff) {
@@ -1131,4 +1060,56 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
     </script>
 
 
+    <script>
+        document.getElementById("incidentForm").addEventListener("submit", function (e) {
+            let formIsValid = true;
+            let firstErrorElement = null;
+
+            const fields = [
+                { id: "hospitalid", errorId: "hospitalid-error" },
+                { id: "affectedward", errorId: "affectedward-error" },
+                { id: "cat", errorId: "cat-error" },
+                { id: "priority", errorId: "priority-error" },
+                { id: "incidentdate", errorId: "incidentdate-error" },
+                { id: "incidenttime", errorId: "incidenttime-error" },
+                { id: "datereported", errorId: "datereported-error" },
+                { id: "invesitgatedby", errorId: "invesitgatedby-error" },
+                { id: "dptSelect", errorId: "dptSelect-error" },
+                { id: "dptDetails", errorId: "dptDetails-error" }
+            ];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const error = document.getElementById(field.errorId);
+
+                if (!input || input.value.trim() === "") {
+                    input.classList.add("is-invalid");
+                    error.style.display = "block";
+                    formIsValid = false;
+                    if (!firstErrorElement) firstErrorElement = input;
+                } else {
+                    input.classList.remove("is-invalid");
+                    error.style.display = "none";
+                }
+            });
+
+            if (!formIsValid) {
+                e.preventDefault(); // stop submission
+                firstErrorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                firstErrorElement.focus();
+            }
+        });
+
+        // Real-time clearing of errors
+        ["hospitalid", "affectedward", "cat", "priority","incidentdate","incidenttime","datereported","invesitgatedby","dptSelect","dptDetails"].forEach(id => {
+            const input = document.getElementById(id);
+            input?.addEventListener("change", () => {
+                input.classList.remove("is-invalid");
+                const error = document.getElementById(`${id}-error`);
+                error.style.display = "none";
+            });
+        });
+    </script>
+
 }
+

@@ -1020,6 +1020,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             // 3. Extra setup
             await GetInvestigators(int.Parse(model.hospitalid));
             await PopulateDropdowns(model);
+
             model.AccessLevel = HttpContext.Session.GetString("accessLevel");
 
             return View("IncidentEdit", model);
@@ -1263,8 +1264,9 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
             await GetInvestigators(int.Parse(model.hospitalid));
             await PopulateDropdowns(model);
-            model.AccessLevel = HttpContext.Session.GetString("accessLevel");
-            return View("IncidentEdit", model); // Or wherever you want to go after update
+            HttpContext.Session.SetString("accessLevel", model.AccessLevel ?? "standard");
+            //return View("IncidentEdit", model); // Or wherever you want to go after update
+            return RedirectToAction("IncidentEdit", new { id = model.qarid });
         }
 
         //NEW INCIDENT EDIT END

@@ -27,9 +27,10 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
     <input type="hidden" asp-for="CapturedbyDpt" />
     <input type="hidden" asp-for="active" value="Y" />
     <input type="hidden" asp-for="qarid" />
+    <input type="hidden" asp-for="AccessLevel" />
 
     <section class="form_grid">
-        <div class="form_grid_item_span4">Section A: Incident Details</div>
+        <div class="form_grid_item_span4e">Section A: Incident Details</div>
         <div class="form_grid_item_span2">
             <label for="hospitalid">Hospital</label>
             <select class="form-control" asp-for="inserthospitalid" asp-items="Model.Hospitals" id="hospitalid">
@@ -42,7 +43,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <option value="">Please Select</option>
             </select>
         </div>
-        <div class="form_grid_item_span4">Section B: Person Involved</div>
+        <div class="form_grid_item_span4e">Section B: Person Involved</div>
         <div class="form_grid_item">
             <label for="inctypescat1">Type of Incident</label>
             <select class="form-control" asp-for="pte" asp-items="Model.IncidentCategories" id="cat">
@@ -128,7 +129,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
 
         
-        <div class="form_grid_item_span4">Section C: When It Occurred and Investigated By.</div>
+        <div class="form_grid_item_span4e">Section C: When It Occurred and Investigated By.</div>
         <div class="form_grid_item">
             <label for="priority">Severity</label>
             <select class="form-control" asp-for="priority" id="priority">
@@ -172,7 +173,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         </div>
         
         
-        <div class="form_grid_item_span4">Section D: Describe the Incident </div>
+        <div class="form_grid_item_span4e">Section D: Describe the Incident </div>
         <div class="form_grid_item">
             <label for="dptSelect">Staff Department</label>
             <select class="form-control" asp-for="assignedcat" id="dptSelect">
@@ -201,7 +202,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
             </div>
         </div>
-        <div class="form_grid_item_span4">Section E: Investigations / Description / Root Causes  </div>
+        <div class="form_grid_item_span4e">Section E: Investigations / Description / Root Causes  </div>
         <div class="form_grid_item_span2">
             <label>Short Initial Description</label><br>
             <textarea asp-for="description" class="form_textarea"></textarea>
@@ -230,21 +231,22 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 </tr>
             </table>
         </div>
-        <div class="form_grid_item_span4_nc" id="textArea1" style="display:none;">
+        
+        <div class="form_grid_item_span4e_nc" id="textArea1" style="display:none;">
             <label>
                 Investigation <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
             </label><br>
             <textarea asp-for="investigation" class="form_textarea"></textarea>
         </div>
-        <div class="form_grid_item_span4_nc" id="textArea2" style="display:none;">
+        <div class="form_grid_item_span4e_nc" id="textArea2" style="display:none;">
             <label>Root Cause</label><br>
             <textarea asp-for="summary" class="form_textarea"></textarea>
         </div>
-        <div class="form_grid_item_span4_nc" id="textArea3" style="display:none;">
+        <div class="form_grid_item_span4e_nc" id="textArea3" style="display:none;">
             <label>Add Near Root Cause</label><br>
             <textarea asp-for="summary2" class="form_textarea"></textarea>
         </div>
-        <div class="form_grid_item_span4">Section F: Call to Action </div>
+        <div class="form_grid_item_span4e">Section F: Call to Action </div>
         <div class="form_grid_item_span3_nc">
             <label>Corrective Action</label><br>
             <textarea asp-for="correctaction" class="form_textarea"></textarea>
@@ -252,6 +254,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <label>Preventative Action</label><br>
             <textarea asp-for="preventaction" class="form_textarea"></textarea>
         </div>
+
         <div class="form_grid_item">
             Status<br />
             @if (Model.AccessLevel == "admin")
@@ -296,7 +299,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             }
         </div>
         <div class="form_grid_item_span3_nc">
-            <div class="form_grid_item_span4_nc" id="textArea4" style="display:none;">
+            <div class="form_grid_item_span4e_nc" id="textArea4" style="display:none;">
                 <label>Brief Description as to why the Incident is being put on hold.</label><br>
                 <textarea asp-for="onholddesc" class="form_textarea"></textarea>
                 <input type="hidden" asp-for="onholddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
@@ -305,7 +308,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         </div>
         <div class="grid_item"></div>
         <div class="form_grid_item_span3_nc">
-            <div class="form_grid_item_span4_nc" id="textArea5" style="display:none;">
+            <div class="form_grid_item_span4e_nc" id="textArea5" style="display:none;">
                 <label>Closing Description.</label><br>
                 <textarea asp-for="closeddesc" class="form_textarea"></textarea>
                 <input type="hidden" asp-for="closeddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
@@ -318,7 +321,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <div class="form-group mt-3">
                 <label for="fileUpload">Upload Attachment</label>
                 <input type="file" id="fileUpload" class="form-control" />
-                <button type="button" class="btn btn-primary mt-2" onclick="uploadSimpleAttachment()">📤 Upload Attachment</button>
+                <button type="button" class="btn btn-primary mt-2" onclick="uploadSimpleAttachment()">Upload Attachment</button>
             </div>
 
 
@@ -328,16 +331,16 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                     foreach (var item in Model.Attachments)
                     {
                         <div class="uploaded-file-entry">
-                            <p><strong>📁 Folder:</strong> @item.Foldername</p>
-                            <p><strong>📎 File:</strong> @item.Attachment</p>
+                            <p><strong>Folder:</strong> @item.Foldername</p>
+                            <p><strong>File:</strong> @item.Attachment</p>
                             <div class="btn-group">
                                 <a href="/uploads/@item.Foldername/@item.Attachment"
                                    class="btn btn-sm btn-primary"
                                    download="@item.Addendums">
-                                    ⬇️ Download
+                                    Download
                                 </a>
                                 <button class="btn btn-sm btn-danger ms-2" onclick="deleteAttachment('@item.Attachment')">
-                                    🗑️ Delete
+                                    Delete
                                 </button>
                             </div>
                             <hr />
@@ -354,7 +357,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
 
 
-        <div class="form_grid_item_span4_nc">
+        <div class="form_grid_item_span4e_nc">
             @if (Model.AccessLevel == "admin")
             {
                 <div class="alert alert-success">Welcome Admin! Full access granted.</div>
@@ -367,27 +370,25 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
         </div>
         <script>
-            function textAreaShow1(onOff) {
-            document.getElementById('textArea1').style.display = onOff;
+            function textAreaShow1(displayStyle) {
+                document.getElementById('textArea1').style.display = displayStyle;
+            }
+            function textAreaShow2(displayStyle) {
+                document.getElementById('textArea2').style.display = displayStyle;
+            }
+            function textAreaShow3(displayStyle) {
+                document.getElementById('textArea3').style.display = displayStyle;
             }
 
-            function textAreaShow2(onOff) {
-            document.getElementById('textArea2').style.display = onOff;
+            function textAreaShow4(displayStyle) {
+            document.getElementById('textArea4').style.display = displayStyle;
             }
 
-            function textAreaShow3(onOff) {
-            document.getElementById('textArea3').style.display = onOff;
-            }
-
-            function textAreaShow4(onOff) {
-            document.getElementById('textArea4').style.display = onOff;
-            }
-
-            function textAreaShow5(onOff) {
-            document.getElementById('textArea5').style.display = onOff;
+            function textAreaShow5(displayStyle) {
+            document.getElementById('textArea5').style.display = displayStyle;
             }
         </script>
-        <div class="form_grid_item_span4_nc">
+        <div class="form_grid_item_span4e_nc">
             <button type="submit" class="btn btn-primary mt-4">Update Incident</button>
        </div>
     </section>
@@ -397,6 +398,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 <input type="hidden" id="existingCat2" value="@Model.incidenttype" />
 <input type="hidden" id="existingCat3" value="@Model.inctypescat1" />
 <input type="hidden" id="existingCat4" value="@Model.inctypescat2" />
+
 </form>
 
 
@@ -1368,5 +1370,46 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         }
     </script>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Investigation
+            const investigationVal = "@(Model.investigation ?? "")".trim();
+            if (investigationVal !== "") {
+                document.querySelector("input[name='investcheck'][value='Y']").checked = true;
+                textAreaShow1('inline');
+            }
+
+            // Root Cause (summary)
+            const rootCauseVal = "@(Model.summary ?? "")".trim();
+            if (rootCauseVal !== "") {
+                document.querySelector("input[name='rootcheck'][value='Y']").checked = true;
+                textAreaShow2('inline');
+            }
+
+            // Near Root Cause (summary2)
+            const nearRootVal = "@(Model.summary2 ?? "")".trim();
+            if (nearRootVal !== "") {
+                document.querySelector("input[name='nearrootcheck'][value='Y']").checked = true;
+                textAreaShow3('inline');
+            }
+
+
+                        // On Hold
+            const nearRootVal = "@(Model.onholddesc ?? "")".trim();
+            if (nearRootVal !== "") {
+                document.querySelector("input[name='status'][value='Y']").checked = true;
+                textAreaShow3('inline');
+            }
+
+                        // Closed
+            const nearRootVal = "@(Model.closeddesc ?? "")".trim();
+            if (nearRootVal !== "") {
+                document.querySelector("input[name='status'][value='Y']").checked = true;
+                textAreaShow3('inline');
+            }
+
+
+        });
+    </script>
 
 }
