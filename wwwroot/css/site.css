@@ -460,6 +460,15 @@ body.shrink .shrink-btn {
     font-weight: 400;
 }
 
+.form_grid_item_span4e_nc {
+    grid-column: span 4;
+    background-color: whitesmoke;
+    font-size: 0.85rem;
+    background-color: whitesmoke;
+    border-radius: 0px;
+    padding: 0.3rem;
+}
+
 .form_grid_item_span4_nc {
     grid-column: span 4;
     background-color: whitesmoke;

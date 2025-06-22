@@ -44,11 +44,7 @@ namespace Mimsv2.Controllers
                 await PopulateDropdowns(model); // Load only this hospital
             }
 
-
-
-
-
-            await PopulateDropdowns(model);
+            //await PopulateDropdowns(model);
             return View(model);
         }
 
@@ -367,9 +363,38 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
 
 
+        //[HttpGet]
+        //public async Task<IActionResult> GetInvestigators(int hospitalid)
+        //{
+
+        //    var list = new List<SelectListItem>();
+
+        //    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //    await conn.OpenAsync();
+
+        //    string sql = @"SELECT * FROM tblusers
+        //           WHERE hospitalid = @hospitalId AND active = 'Y'
+        //           ORDER BY username, surname";
+
+        //    using var cmd = new NpgsqlCommand(sql, conn);
+        //    //cmd.Parameters.AddWithValue("@hospitalId", hospitalId);
+        //    cmd.Parameters.AddWithValue("@hospitalId", hospitalid.ToString());
+
+        //    using var reader = await cmd.ExecuteReaderAsync();
+        //    while (await reader.ReadAsync())
+        //    {
+        //        string loginname = reader["loginname"].ToString();
+        //        string fullName = $"{reader["username"]} {reader["surname"]}";
+        //        list.Add(new SelectListItem { Value = loginname, Text = fullName });
+        //    }
+
+        //    return Json(list);
+        //}
+
         [HttpGet]
-        public async Task<IActionResult> GetInvestigators(int hospitalId)
+        public async Task<List<SelectListItem>> GetInvestigators(int hospitalid)
         {
+
             var list = new List<SelectListItem>();
 
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -381,7 +406,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
             using var cmd = new NpgsqlCommand(sql, conn);
             //cmd.Parameters.AddWithValue("@hospitalId", hospitalId);
-            cmd.Parameters.AddWithValue("@hospitalId", hospitalId.ToString());
+            cmd.Parameters.AddWithValue("@hospitalId", hospitalid.ToString());
 
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -391,7 +416,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                 list.Add(new SelectListItem { Value = loginname, Text = fullName });
             }
 
-            return Json(list);
+            return list;
         }
 
         [HttpGet]
@@ -671,6 +696,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             cmd.Parameters.AddWithValue("@titles", model.CapturedByTitle ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@reportedby", model.CapturedByLoginName ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@invesitgatedby", model.invesitgatedby ?? (object)DBNull.Value);
+
             cmd.Parameters.AddWithValue("@assignedcat", model.assignedcat ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@assignedstaff", model.assignedstaff ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@incidentdate", model.incidentdate ?? (object)DBNull.Value);
@@ -921,7 +947,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
         //NEW INCIDENT EDIT
         [HttpGet]
-        public async Task<IActionResult> EditIncident(string id, string? inserthospitalid)
+        public async Task<IActionResult> EditIncident(string? id, string? inserthospitalid)
         {
             if (string.IsNullOrEmpty(id))
                 return NotFound();
@@ -1018,132 +1044,32 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             }
 
             // 3. Extra setup
-            await GetInvestigators(int.Parse(model.hospitalid));
+            //await GetInvestigators(int.Parse(model.hospitalid));
+
+            //model.Investigators = await GetInvestigators(int.Parse(model.hospitalid));
+            //model.invesitgatedby = "Zain Slamdien";
+            
+            model.Investigators = await GetInvestigators(int.Parse(model.hospitalid));
+
+
+
             await PopulateDropdowns(model);
 
             model.AccessLevel = HttpContext.Session.GetString("accessLevel");
-
+            model.inserthospitalid = inserthospitalid;
             return View("IncidentEdit", model);
         }
 
-        //    [HttpGet]
-        //    public async Task<IActionResult> EditIncident(string id, string? inserthospitalid)
-        //    { 
-        //        if (string.IsNullOrEmpty(id))
-        //            return NotFound();
-
-        //        var model = new FormModel();
-
-        //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        //        await conn.OpenAsync();
-
-        //        string sql = @"SELECT * FROM tblincident WHERE qarid = @qarid LIMIT 1";
-        //        using var cmd = new NpgsqlCommand(sql, conn);
-        //        cmd.Parameters.AddWithValue("@qarid", id);
-
-        //        using var reader = await cmd.ExecuteReaderAsync();
-        //        if (await reader.ReadAsync())
-        //        {
-        //            model.qarid = reader["qarid"]?.ToString();
-        //            model.affectedward = reader["affectedward"]?.ToString();
-        //            model.incidentcriteria = reader["incidentcriteria"]?.ToString();
-        //            model.incidentcriteriasub = reader["incidentcriteriasub"]?.ToString();
-        //            model.CapturedByLoginName = reader["requester"]?.ToString();
-        //            model.CapturedByEmail = reader["requesteremail"]?.ToString();
-        //            model.priority = reader["priority"]?.ToString();
-        //            model.CapturedByTitle = reader["titles"]?.ToString();
-        //            model.invesitgatedby = reader["invesitgatedby"]?.ToString();
-        //            model.assignedcat = reader["assignedcat"]?.ToString();
-        //            model.assignedstaff = reader["assignedstaff"]?.ToString();
-        //            model.incidentdate = reader["incidentdate"] as DateTime?;
-        //            model.incidenttime = reader["incidenttime"]?.ToString();
-        //            model.datereported = reader["datereported"] as DateTime?;
-        //            model.datecaptured = reader["datecaptured"] as DateTime?;
-        //            model.summary = reader["summary"]?.ToString();
-        //            model.description = reader["description"]?.ToString();
-        //            model.timecaptured = reader["timecaptured"]?.ToString();
-        //            model.active = reader["active"]?.ToString();
-        //            model.status = reader["status"]?.ToString();
-        //            model.hospitalid = reader["hospitalid"]?.ToString();
-        //            model.CapturedByName = reader["username"]?.ToString();
-        //            model.CapturedBySurname = reader["surname"]?.ToString();
-        //            model.onholddescdate = reader["onholddescdate"] as DateTime?;
-        //            model.closeddescdate = reader["closeddescdate"] as DateTime?;
-        //            model.onholddesctime = reader["onholddesctime"]?.ToString();
-        //            model.closeddesctime = reader["closeddesctime"]?.ToString();
-        //            model.onholddesc = reader["onholddesc"]?.ToString();
-        //            model.closeddesc = reader["closeddesc"]?.ToString();
-        //            model.pte = reader["pte"]?.ToString();
-        //            model.ptenumber = reader["ptenumber"]?.ToString();
-        //            model.ptename = reader["ptename"]?.ToString();
-        //            model.ptesurname = reader["ptesurname"]?.ToString();
-        //            model.ptetitle = reader["ptetitle"]?.ToString();
-        //            model.correctaction = reader["correctaction"]?.ToString();
-        //            model.correctactiontime = reader["correctactiontime"]?.ToString();
-        //            model.preventaction = reader["preventaction"]?.ToString();
-        //            model.preventactiontime = reader["preventactiontime"]?.ToString();
-        //            model.preventactiondate = reader["preventactiondate"] as DateTime?;
-        //            model.correctactiondate = reader["correctactiondate"] as DateTime?;
-        //            model.investigation = reader["investigation"]?.ToString();
-        //            model.summary2 = reader["summary2"]?.ToString();
-        //            model.medrelatedtotal = reader["medrelatedtotal"]?.ToString();
-        //            model.CapturedbyDpt = reader["reportedbydepartment"]?.ToString();
-        //            model.acquired = reader["acquired"]?.ToString();
-        //            model.incidenttype = reader["incidenttype"]?.ToString();
-        //            model.inctypescat1 = reader["inctypescat1"]?.ToString();
-        //            model.inctypescat2 = reader["inctypescat2"]?.ToString();
-        //            model.incidentarea = reader["incidentarea"]?.ToString();
-        //            model.incidentareanight = reader["incidentareanight"]?.ToString();
-
-
-        //        }
-
-
-        //        using (var attachReader = await attachCmd.ExecuteReaderAsync())
-        //        {
-        //            while (await attachReader.ReadAsync())
-        //            {
-        //                model.Attachments = new List<IncidentAttachment>();
-
-        //        string attachSql = @"
-        //SELECT attachment, foldername, addendums
-        //FROM incidentattachments
-        //WHERE qarid = @qarid AND active = 'Y' AND criteria = 'Attachments'";
-
-        //        using var attachCmd = new NpgsqlCommand(attachSql, conn);
-        //        attachCmd.Parameters.AddWithValue("@qarid", id);
-
-        //        using var attachReader = await attachCmd.ExecuteReaderAsync();
-        //        while (await attachReader.ReadAsync())
-        //        {
-        //            model.Attachments.Add(new IncidentAttachment
-        //            {
-        //                Attachment = attachReader["attachment"]?.ToString() ?? "",
-        //                Foldername = attachReader["foldername"]?.ToString() ?? "",
-        //                Addendums = attachReader["addendums"]?.ToString() ?? ""
-
-        //            });
-        //        }
-        //        }
-        //        }
-
-
-
-        //        await GetInvestigators(int.Parse(model.hospitalid));
-        //        await PopulateDropdowns(model); // your existing dropdown helper
-        //        model.AccessLevel = HttpContext.Session.GetString("accessLevel");
-
-        //        return View("IncidentEdit", model);
-        //    }
+        
 
         [HttpPost]
         public async Task<IActionResult> EditIncident(FormModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                await PopulateDropdowns(model);
-                return View("IncidentEdit", model);
-            }
+            //if (!ModelState.IsValid)
+            //{
+           //     await PopulateDropdowns(model);
+            //    return View("IncidentEdit", model);
+           // }
 
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
@@ -1170,7 +1096,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
     timecaptured = @timecaptured,
     active = @active,
     status = @status,
-    hospitalid = @inserthospitalid,
+    hospitalid = @hospitalid,
     qarid = @qarid,
     username = @username,
     surname = @surname,
@@ -1215,6 +1141,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             cmd.Parameters.AddWithValue("@titles", model.CapturedByTitle ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@reportedby", model.CapturedByLoginName ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@invesitgatedby", model.invesitgatedby ?? (object)DBNull.Value);
+           
             cmd.Parameters.AddWithValue("@assignedcat", model.assignedcat ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@assignedstaff", model.assignedstaff ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@incidentdate", model.incidentdate ?? (object)DBNull.Value);
@@ -1262,12 +1189,14 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             await cmd.ExecuteNonQueryAsync();
 
 
-            await GetInvestigators(int.Parse(model.hospitalid));
+            //await GetInvestigators(int.Parse(model.inserthospitalid));
+            model.Investigators = await GetInvestigators(int.Parse(model.inserthospitalid));
             await PopulateDropdowns(model);
             HttpContext.Session.SetString("accessLevel", model.AccessLevel ?? "standard");
             //return View("IncidentEdit", model); // Or wherever you want to go after update
-            return RedirectToAction("IncidentEdit", new { id = model.qarid });
+            return RedirectToAction("EditIncident", new { id = model.qarid, inserthospitalid = model.inserthospitalid });
         }
+      
 
         //NEW INCIDENT EDIT END
 
@@ -1286,7 +1215,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
             string sql = @"SELECT * 
                    FROM incidentattachments 
-                   WHERE qarid = @qarid AND active = 'Y'";
+                   WHERE qarid = @qarid AND active = 'Y' AND criteria != 'Attachments'";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@qarid", qarid);
@@ -1469,7 +1398,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            string sql = @"SELECT qarid, incidentdate, summary, hospitalid, status FROM tblincident WHERE active = 'Y' ORDER BY incidentdate DESC";
+            string sql = @"SELECT * FROM tblincident WHERE active = 'Y' ORDER BY id DESC limit 10";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             using var reader = await cmd.ExecuteReaderAsync();
@@ -1489,5 +1418,27 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         }
 
         //view incidents
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteIncident(string qarid)
+        {
+            if (string.IsNullOrWhiteSpace(qarid))
+                return BadRequest("Invalid QARID.");
+
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await conn.OpenAsync();
+
+            string sql = "UPDATE tblincident SET active = 'N' WHERE qarid = @qarid";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@qarid", qarid);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            // Redirect or return success
+            return RedirectToAction("ViewAllIncidents"); // or wherever you list incidents
+        }
+
     }
 }

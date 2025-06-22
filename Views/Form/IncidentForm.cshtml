@@ -3,6 +3,8 @@
     ViewData["Title"] = "Mims Incident Form";
 }
 
+
+
 @if (Model.AccessLevel == "admin")
 {
     <div class="alert alert-success">Welcome Admin! Full access granted.</div>
@@ -12,7 +14,7 @@ else
 {
     <p class="text-muted">Standard access - admin sections are hidden.</p>
 }
-
+ 
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
 }
@@ -22,17 +24,19 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 <br />
 
 
+
+
 <form asp-action="IncidentFormInput" method="post" id="incidentForm" style="min-height:200vh;">
-    <input type="hidden" asp-for="CapturedByLoginName" />
-    <input type="hidden" asp-for="CapturedByName" />
-    <input type="hidden" asp-for="CapturedBySurname" />
-    <input type="hidden" asp-for="CapturedByTitle" />
-    <input type="hidden" asp-for="CapturedByEmail" />
+    <input type="hidden" asp-for="CapturedByLoginName" value="@Context.Session.GetString("loginname")" />
+    <input type="hidden" asp-for="CapturedByName" value="@Context.Session.GetString("username")" />
+    <input type="hidden" asp-for="CapturedBySurname" value="@Context.Session.GetString("surname")"/>
+    <input type="hidden" asp-for="CapturedByTitle" value="@Context.Session.GetString("titles")" />
+    <input type="hidden" asp-for="CapturedByEmail" value="@Context.Session.GetString("email")" />
     <input type="hidden" asp-for="HospitalId" />
-    <input type="hidden" asp-for="CapturedbyDpt" />
-    <input type="hidden" asp-for="CapturedbyDpt" />
+    <input type="hidden" asp-for="CapturedbyDpt" value="@Context.Session.GetString("department")" />
     <input type="hidden" asp-for="active" value="Y" />
     <input type="hidden" asp-for="qarid" />
+
 
     <!-- Rest of the form goes here -->
     <section class="form_grid">
@@ -231,13 +235,13 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
         <div class="form_grid_item">
             <label for="Name">Name</label><br />
-            <input type="text" class="form-control" id="Name" readonly>
-            
+            <input type="text" class="form-control" name="InvName" id="Name" readonly>
+  
         </div>
 
         <div class="form_grid_item">
             <label for="Surname">Surname</label><br />
-            <input type="text" class="form-control" id="Surname" readonly>
+            <input type="text" class="form-control" name="InvSurname" id="Surname" readonly>
           
         </div>
 

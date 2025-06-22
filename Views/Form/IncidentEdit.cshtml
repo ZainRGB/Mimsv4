@@ -14,9 +14,12 @@
 <h3>New Incident Form</h3>
 Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
 <br />
+<input type="text" asp-for="invesitgatedby" />
+<p>Name: @Context.Session.GetString("loginname");</p>
 
 
-<form asp-action="EditIncident" method="post" id="incidentForm" style="min-height:200vh;">
+
+<form asp-action="EditIncident" method="post" id="incidentForm" style="min-height:200vh;display:inline;">
     <input type="hidden" asp-for="CapturedByLoginName" />
     <input type="hidden" asp-for="CapturedByName" />
     <input type="hidden" asp-for="CapturedBySurname" />
@@ -24,10 +27,12 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
     <input type="hidden" asp-for="CapturedByEmail" />
     <input type="hidden" asp-for="HospitalId" />
     <input type="hidden" asp-for="CapturedbyDpt" />
-    <input type="hidden" asp-for="CapturedbyDpt" />
     <input type="hidden" asp-for="active" value="Y" />
     <input type="hidden" asp-for="qarid" />
     <input type="hidden" asp-for="AccessLevel" />
+    <input type="text" asp-for="inserthospitalid"/>
+    <input type="hidden" asp-for="hospitalid" />
+    
 
     <section class="form_grid">
         <div class="form_grid_item_span4e">Section A: Incident Details</div>
@@ -155,9 +160,10 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         
         <div class="form_grid_item">
             <label for="invesitgatedby">Investigated By</label>
-            <select class="form-control" asp-for="invesitgatedby" asp-items="Model.Investigators" id="invesitgatedby" >
-                <option value="">Please Select</option>
+            <select class="form-control" asp-for="invesitgatedby" asp-items="@Model.Investigators" id="invesitgatedby" >
+                <option value="@Model.invesitgatedby" selected>@Model.invesitgatedby</option>
             </select>
+            <input type="text" class="form-control" asp-for="invesitgatedby" >
         </div>
         <div class="form_grid_item">
             <label for="Name">Name</label><br />
@@ -246,6 +252,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <label>Add Near Root Cause</label><br>
             <textarea asp-for="summary2" class="form_textarea"></textarea>
         </div>
+
         <div class="form_grid_item_span4e">Section F: Call to Action </div>
         <div class="form_grid_item_span3_nc">
             <label>Corrective Action</label><br>
@@ -275,7 +282,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                         <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="closed" onclick="textAreaShow5('inline');textAreaShow4('none');" class="form_radio"></td>
                     </tr>
                     <tr>
-                        <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;"><button class="btn btn-danger">Delete this Incident</button></td>
+                        <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;"></td>
                     </tr>
                 </table>
             }
@@ -300,40 +307,45 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         </div>
         <div class="form_grid_item_span3_nc">
             <div class="form_grid_item_span4e_nc" id="textArea4" style="display:none;">
-                <label>Brief Description as to why the Incident is being put on hold.</label><br>
+                <label style="color:limegreen;">On Hold Description</label><br>
                 <textarea asp-for="onholddesc" class="form_textarea"></textarea>
                 <input type="hidden" asp-for="onholddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                <input type="text" asp-for="onholddesctime" value="@DateTime.Now.ToString("HH:mm")" />
+                <input type="hidden" asp-for="onholddesctime" value="@DateTime.Now.ToString("HH:mm")" />
             </div>
         </div>
+
         <div class="grid_item"></div>
         <div class="form_grid_item_span3_nc">
             <div class="form_grid_item_span4e_nc" id="textArea5" style="display:none;">
-                <label>Closing Description.</label><br>
+                <label style="color:orangered;">Closing Description.</label><br>
                 <textarea asp-for="closeddesc" class="form_textarea"></textarea>
                 <input type="hidden" asp-for="closeddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                <input type="text" asp-for="closeddesctime" value="@DateTime.Now.ToString("HH:mm")" />
+                <input type="hidden" asp-for="closeddesctime" value="@DateTime.Now.ToString("HH:mm")" />
             </div>
         </div>
-        <div class="grid_item">
+
+        <div class="grid_item"></div>
+
+        <div class="form_grid_item_span2">
             <input type="hidden" id="qarid" value="@Model.QarId" />
 
             <div class="form-group mt-3">
                 <label for="fileUpload">Upload Attachment</label>
                 <input type="file" id="fileUpload" class="form-control" />
-                <button type="button" class="btn btn-primary mt-2" onclick="uploadSimpleAttachment()">Upload Attachment</button>
+                <button type="button" class="btn btn-secondary mt-2" onclick="uploadSimpleAttachment()">Upload Attachment</button>
             </div>
 
-
+        </div>
+        <div class="form_grid_item_span2">
             <div class="uploaded-file-entry">
                 @if (Model.Attachments != null && Model.Attachments.Any())
                 {
                     foreach (var item in Model.Attachments)
                     {
                         <div class="uploaded-file-entry">
-                            <p><strong>Folder:</strong> @item.Foldername</p>
-                            <p><strong>File:</strong> @item.Attachment</p>
-                            <div class="btn-group">
+                            <!---<p><strong>Folder:</strong> @item.Foldername</p>--->
+                            <p style="display:inline;"><strong>File:</strong> @item.Addendums</p>
+                            <span class="btn-group" style="float:right;">
                                 <a href="/uploads/@item.Foldername/@item.Attachment"
                                    class="btn btn-sm btn-primary"
                                    download="@item.Addendums">
@@ -342,64 +354,73 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                                 <button class="btn btn-sm btn-danger ms-2" onclick="deleteAttachment('@item.Attachment')">
                                     Delete
                                 </button>
-                            </div>
+                            </span>
                             <hr />
                         </div>
                     }
                 }
 
             </div>
-
-
-
         </div>
 
 
 
 
-        <div class="form_grid_item_span4e_nc">
-            @if (Model.AccessLevel == "admin")
-            {
-                <div class="alert alert-success">Welcome Admin! Full access granted.</div>
 
-            }
-            else
-            {
-                <p class="text-muted">Standard access - admin sections are hidden.</p>
-            }
+        <div class="form_grid_item_span4e_nc">
+            <script>
+                function textAreaShow1(displayStyle) {
+                    document.getElementById('textArea1').style.display = displayStyle;
+                }
+                function textAreaShow2(displayStyle) {
+                    document.getElementById('textArea2').style.display = displayStyle;
+                }
+                function textAreaShow3(displayStyle) {
+                    document.getElementById('textArea3').style.display = displayStyle;
+                }
+
+                function textAreaShow4(displayStyle) {
+                document.getElementById('textArea4').style.display = displayStyle;
+                }
+
+                function textAreaShow5(displayStyle) {
+                document.getElementById('textArea5').style.display = displayStyle;
+                }
+            </script>
+
 
         </div>
-        <script>
-            function textAreaShow1(displayStyle) {
-                document.getElementById('textArea1').style.display = displayStyle;
-            }
-            function textAreaShow2(displayStyle) {
-                document.getElementById('textArea2').style.display = displayStyle;
-            }
-            function textAreaShow3(displayStyle) {
-                document.getElementById('textArea3').style.display = displayStyle;
-            }
 
-            function textAreaShow4(displayStyle) {
-            document.getElementById('textArea4').style.display = displayStyle;
-            }
 
-            function textAreaShow5(displayStyle) {
-            document.getElementById('textArea5').style.display = displayStyle;
-            }
-        </script>
+       
+
         <div class="form_grid_item_span4e_nc">
-            <button type="submit" class="btn btn-primary mt-4">Update Incident</button>
-       </div>
+
+            <button type="submit" class="btn btn-primary mt-4" style="display:inline;vertical-align:bottom;">Update Incident</button>
+
+            <input type="hidden" id="existingCat1" value="@Model.pte" />
+            <input type="hidden" id="existingCat2" value="@Model.incidenttype" />
+            <input type="hidden" id="existingCat3" value="@Model.inctypescat1" />
+            <input type="hidden" id="existingCat4" value="@Model.inctypescat2" />
+
+
+
+<a class="btn btn-info" href="@Url.Action("ViewAllIncidents", "Form")" style="display:inline;vertical-align:bottom;">
+    Close
+</a>
+            <form asp-action="DeleteIncident" method="post" style="display:inline;float:right;vertical-align:bottom;" onsubmit="return confirm('Are you sure you want to delete this incident?');">
+                <input type="hidden" name="qarid" value="@Model.qarid" />
+                <button type="submit" class="btn btn-danger">Delete Incident</button>
+            </form>
+            <br><br />
+        </div>
+
     </section>
 
 
-<input type="hidden" id="existingCat1" value="@Model.pte" />
-<input type="hidden" id="existingCat2" value="@Model.incidenttype" />
-<input type="hidden" id="existingCat3" value="@Model.inctypescat1" />
-<input type="hidden" id="existingCat4" value="@Model.inctypescat2" />
-
 </form>
+
+
 
 
 @* <!---SECTION A---> *@
@@ -440,104 +461,104 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
     @* <!---SECTION B---> *@
     <script>
-    document.addEventListener("DOMContentLoaded", async function () {
-        const cat = document.getElementById("cat");
-        const sub1 = document.getElementById("subcat1");
-        const sub2 = document.getElementById("subcat2");
-        const sub3 = document.getElementById("subcat3");
+        document.addEventListener("DOMContentLoaded", async function () {
+            const cat = document.getElementById("cat");
+            const sub1 = document.getElementById("subcat1");
+            const sub2 = document.getElementById("subcat2");
+            const sub3 = document.getElementById("subcat3");
 
-        const existingCat1 = document.getElementById("existingCat1")?.value;
-        const existingCat2 = document.getElementById("existingCat2")?.value;
-        const existingCat3 = document.getElementById("existingCat3")?.value;
-        const existingCat4 = document.getElementById("existingCat4")?.value;
+            const existingCat1 = document.getElementById("existingCat1")?.value;
+            const existingCat2 = document.getElementById("existingCat2")?.value;
+            const existingCat3 = document.getElementById("existingCat3")?.value;
+            const existingCat4 = document.getElementById("existingCat4")?.value;
 
-        // 1. Load categories
-        const catResponse = await fetch("/Form/GetIncidentCategories");
-        const catData = await catResponse.json();
-        cat.innerHTML = '<option value="">Please select</option>';
+            // 1. Load categories
+            const catResponse = await fetch("/Form/GetIncidentCategories");
+            const catData = await catResponse.json();
+            cat.innerHTML = '<option value="">Please select</option>';
 
-        catData.forEach(item => {
-            const option = new Option(item.text, item.value);
-            if (item.value === existingCat1) option.selected = true;
-            cat.appendChild(option);
-        });
-
-        // 2. If edit mode, trigger load for subcat1
-        if (existingCat1) {
-            await loadSub1(existingCat1);
-        }
-
-        if (existingCat2) {
-            await loadSub2(existingCat2);
-        }
-
-        if (existingCat3) {
-            await loadSub3(existingCat3);
-        }
-
-        // 3. Change events
-        cat.addEventListener("change", function () {
-            loadSub1(this.value);
-        });
-
-        sub1.addEventListener("change", function () {
-            loadSub2(this.value);
-        });
-
-        sub2.addEventListener("change", function () {
-            loadSub3(this.value);
-        });
-
-        // Helpers
-        async function loadSub1(catVal) {
-            sub1.disabled = true;
-            sub1.innerHTML = '<option value="">Please select</option>';
-
-            const res = await fetch(`/Form/GetSubCategory1?cat=${encodeURIComponent(catVal)}`);
-            const data = await res.json();
-
-            data.forEach(item => {
+            catData.forEach(item => {
                 const option = new Option(item.text, item.value);
-                if (item.value === existingCat2) option.selected = true;
-                sub1.appendChild(option);
+                if (item.value === existingCat1) option.selected = true;
+                cat.appendChild(option);
             });
 
-            sub1.disabled = false;
-        }
+            // 2. If edit mode, trigger load for subcat1
+            if (existingCat1) {
+                await loadSub1(existingCat1);
+            }
 
-        async function loadSub2(sub1Val) {
-            sub2.disabled = true;
-            sub2.innerHTML = '<option value="">Please select</option>';
+            if (existingCat2) {
+                await loadSub2(existingCat2);
+            }
 
-            const res = await fetch(`/Form/GetSubCategory2?sub1=${encodeURIComponent(sub1Val)}`);
-            const data = await res.json();
+            if (existingCat3) {
+                await loadSub3(existingCat3);
+            }
 
-            data.forEach(item => {
-                const option = new Option(item.text, item.value);
-                if (item.value === existingCat3) option.selected = true;
-                sub2.appendChild(option);
+            // 3. Change events
+            cat.addEventListener("change", function () {
+                loadSub1(this.value);
             });
 
-            sub2.disabled = false;
-        }
-
-        async function loadSub3(sub2Val) {
-            sub3.disabled = true;
-            sub3.innerHTML = '<option value="">Please select</option>';
-
-            const res = await fetch(`/Form/GetSubCategory3?sub2=${encodeURIComponent(sub2Val)}`);
-            const data = await res.json();
-
-            data.forEach(item => {
-                const option = new Option(item.text, item.value);
-                if (item.value === existingCat4) option.selected = true;
-                sub3.appendChild(option);
+            sub1.addEventListener("change", function () {
+                loadSub2(this.value);
             });
 
-            sub3.disabled = false;
-        }
-    });
-</script>
+            sub2.addEventListener("change", function () {
+                loadSub3(this.value);
+            });
+
+            // Helpers
+            async function loadSub1(catVal) {
+                sub1.disabled = true;
+                sub1.innerHTML = '<option value="">Please select</option>';
+
+                const res = await fetch(`/Form/GetSubCategory1?cat=${encodeURIComponent(catVal)}`);
+                const data = await res.json();
+
+                data.forEach(item => {
+                    const option = new Option(item.text, item.value);
+                    if (item.value === existingCat2) option.selected = true;
+                    sub1.appendChild(option);
+                });
+
+                sub1.disabled = false;
+            }
+
+            async function loadSub2(sub1Val) {
+                sub2.disabled = true;
+                sub2.innerHTML = '<option value="">Please select</option>';
+
+                const res = await fetch(`/Form/GetSubCategory2?sub1=${encodeURIComponent(sub1Val)}`);
+                const data = await res.json();
+
+                data.forEach(item => {
+                    const option = new Option(item.text, item.value);
+                    if (item.value === existingCat3) option.selected = true;
+                    sub2.appendChild(option);
+                });
+
+                sub2.disabled = false;
+            }
+
+            async function loadSub3(sub2Val) {
+                sub3.disabled = true;
+                sub3.innerHTML = '<option value="">Please select</option>';
+
+                const res = await fetch(`/Form/GetSubCategory3?sub2=${encodeURIComponent(sub2Val)}`);
+                const data = await res.json();
+
+                data.forEach(item => {
+                    const option = new Option(item.text, item.value);
+                    if (item.value === existingCat4) option.selected = true;
+                    sub3.appendChild(option);
+                });
+
+                sub3.disabled = false;
+            }
+        });
+    </script>
 
 
 
@@ -692,18 +713,20 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
     </script>
 
 
-    @* //SECTION C *@
+
 
     @{
         var selectedInvestigator = Model?.invesitgatedby ?? "";
     }
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const hospitalSelect = document.getElementById("hospitalid");
             const investigatedBySelect = document.getElementById("invesitgatedby");
 
+            hospitalSelect.addEventListener("change", function () {
+                const hospitalId = this.value;
 
-            function loadInvestigators(hospitalId, selectedValue = "") {
                 if (hospitalId) {
                     investigatedBySelect.disabled = false;
                     investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
@@ -717,49 +740,44 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                                 opt.text = user.text;
                                 investigatedBySelect.appendChild(opt);
                             });
-
-                            // Set previously selected value
-                            if (selectedValue) {
-                                investigatedBySelect.value = selectedValue;
-                                fetchInvestigatorDetails(selectedValue); // fetch details
-                            }
+                        })
+                        .catch(err => {
+                            console.error("Failed to load investigators", err);
                         });
+                } else {
+                    investigatedBySelect.disabled = true;
+                    investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
                 }
-            }
-
-            function fetchInvestigatorDetails(loginname) {
-                fetch(`/Form/GetInvestigatorDetails?loginname=${loginname}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data) {
-                            document.getElementById('Name').value = data.username || '';
-                            document.getElementById('Surname').value = data.surname || '';
-                            document.getElementById('Email').value = data.email || '';
-                        }
-                    })
-                    .catch(() => {
-                        document.getElementById('Name').value = '';
-                        document.getElementById('Surname').value = '';
-                        document.getElementById('Email').value = '';
-                    });
-            }
-
-            // === INITIAL LOAD ===
-            const selectedHospital = hospitalSelect.value;
-            const selectedInvestigator = '@Model.invesitgatedby';
-
-            if (selectedHospital) {
-                loadInvestigators(selectedHospital, selectedInvestigator);
-            }
-
-            // === ON HOSPITAL CHANGE ===
-            hospitalSelect.addEventListener("change", function () {
-                loadInvestigators(this.value);
             });
 
-            // === ON INVESTIGATOR CHANGE ===
+            // Investigator details populate when investigator selected
             investigatedBySelect.addEventListener("change", function () {
-                fetchInvestigatorDetails(this.value);
+                const loginname = this.value;
+
+                if (loginname) {
+                    fetch(`/Form/GetInvestigatorDetails?loginname=${loginname}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data) {
+                                document.getElementById('Name').value = data.username;
+                                document.getElementById('Surname').value = data.surname;
+                                document.getElementById('Email').value = data.email;
+                            } else {
+                                document.getElementById('Name').value = '';
+                                document.getElementById('Surname').value = '';
+                                document.getElementById('Email').value = '';
+                            }
+                        })
+                        .catch(() => {
+                            document.getElementById('Name').value = '';
+                            document.getElementById('Surname').value = '';
+                            document.getElementById('Email').value = '';
+                        });
+                } else {
+                    document.getElementById('Name').value = '';
+                    document.getElementById('Surname').value = '';
+                    document.getElementById('Email').value = '';
+                }
             });
         });
     </script>
@@ -1393,23 +1411,21 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 textAreaShow3('inline');
             }
 
-
-                        // On Hold
-            const nearRootVal = "@(Model.onholddesc ?? "")".trim();
-            if (nearRootVal !== "") {
-                document.querySelector("input[name='status'][value='Y']").checked = true;
-                textAreaShow3('inline');
+            // On Hold
+            const holdVal = "@(Model.onholddesc ?? "")".trim();
+            if (holdVal !== "") {
+                document.querySelector("input[name='status'][value='hold']").checked = true;
+                textAreaShow4('inline');
             }
 
-                        // Closed
-            const nearRootVal = "@(Model.closeddesc ?? "")".trim();
-            if (nearRootVal !== "") {
-                document.querySelector("input[name='status'][value='Y']").checked = true;
-                textAreaShow3('inline');
+            // Closed
+            const closedVal = "@(Model.closeddesc ?? "")".trim();
+            if (closedVal !== "") {
+                document.querySelector("input[name='status'][value='closed']").checked = true;
+                textAreaShow5('inline');
             }
-
-
         });
     </script>
+
 
 }

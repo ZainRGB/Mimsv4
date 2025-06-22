@@ -134,7 +134,8 @@ namespace Mimsv2.Models
         public string inserthospitalid { get; set; }
         public string Hospital { get; set; }
         public string QarId { get; set; }
-        
 
+        public string InvName { get; set; }
+        public string InvSurname { get; set; }
     }
 }
