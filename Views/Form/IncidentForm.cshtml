@@ -4,7 +4,6 @@
 }
 
 
-
 @if (Model.AccessLevel == "admin")
 {
     <div class="alert alert-success">Welcome Admin! Full access granted.</div>
@@ -14,10 +13,17 @@ else
 {
     <p class="text-muted">Standard access - admin sections are hidden.</p>
 }
- 
+
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
 }
+
+<div class="alert alert-info mt-2">
+    <strong>Hospital:</strong> @ViewBag.hospitalNames
+</div>
+
+
+<p>@loginHospitalId</p>
 
 <h3>New Incident Form</h3>
 Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
@@ -51,15 +57,14 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <select class="form-control" asp-for="inserthospitalid " asp-items="Model.Hospitals" id="hospitalid">
                     <option value="" selected disabled>Please Select</option>
                 </select>
-				<span class="invalid-feedback" id="hospitalid-error">* Please select a Hospital</span>
+                <span class="invalid-feedback" id="hospitalid-error">* Please select a Hospital</span>
             }else
             {
+                var inserthospitalid = Context.Session.GetString("loginhospitalid");
                 <label for="hospitalid">Hospital</label>
-                <select class="form-control" asp-for="inserthospitalid" id="hospitalid" readonly>
+                <select class="form-control" asp-for="inserthospitalid" id="hospitalid">
                     <option value="@Model.hospitalid" selected>@Model.Hospital</option>
                 </select>
-         
-
             }
         </div>
 
@@ -75,8 +80,8 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             else
             {
                 <label for="affectedward">Affected Ward</label>
-                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward">
-                 <option value="" selected disabled>Please Select</option>
+                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward" data-selected="@Model.affectedward">
+                    <option value="" selected disabled>Please Select</option>
                 </select>
             }
 
@@ -224,32 +229,65 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
         </div>
 
 
+        @if (Model.AccessLevel == "admin")
+        {
+            <div class="form_grid_item">
+                <label for="invesitgatedby">Investigated By</label>
+                <select class="form-control" asp-for="invesitgatedby" id="invesitgatedby" disabled>
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+                <span class="invalid-feedback" id="invesitgatedby-error">* Required Field</span>
+            </div>
 
-        <div class="form_grid_item">
-            <label for="invesitgatedby">Investigated By</label>
-            <select class="form-control" asp-for="invesitgatedby" id="invesitgatedby" disabled>
-                <option value="" selected disabled>Please Select</option>
-            </select>
-            <span class="invalid-feedback" id="invesitgatedby-error">* Required Field</span>
-        </div>
+            <div class="form_grid_item">
+                <label for="Name">Name</label><br />
+                <input type="text" class="form-control" name="InvName" id="Name" readonly>
 
-        <div class="form_grid_item">
-            <label for="Name">Name</label><br />
-            <input type="text" class="form-control" name="InvName" id="Name" readonly>
-  
-        </div>
+            </div>
 
-        <div class="form_grid_item">
-            <label for="Surname">Surname</label><br />
-            <input type="text" class="form-control" name="InvSurname" id="Surname" readonly>
-          
-        </div>
+            <div class="form_grid_item">
+                <label for="Surname">Surname</label><br />
+                <input type="text" class="form-control" name="InvSurname" id="Surname" readonly>
 
-        <div class="form_grid_item">
-            <label for="Email">Email</label><br />
-            <input type="text" class="form-control" id="Email" readonly>
-            
-        </div>
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Email">Email</label><br />
+                <input type="text" class="form-control" id="Email" readonly>
+
+            </div>
+
+        }
+        else
+        {
+            <div class="form_grid_item">
+                <label for="invesitgatedby">Investigated By</label>
+                <select class="form-control" asp-for="invesitgatedby" id="invesitgatedby" data-selected="@Model.invesitgatedby">
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+                <span class="invalid-feedback" id="invesitgatedby-error">* Required Field</span>
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Name">Name</label><br />
+                <input type="text" class="form-control" name="InvName" id="Name" readonly>
+
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Surname">Surname</label><br />
+                <input type="text" class="form-control" name="InvSurname" id="Surname" readonly>
+
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Email">Email</label><br />
+                <input type="text" class="form-control" id="Email" readonly>
+
+            </div>
+
+
+        }
 
 
 
@@ -386,15 +424,14 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 @* <!---SECTION A---> *@
 @section Scripts {
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const hospitalSelect = document.getElementById("hospitalid");
-        const wardSelect = document.getElementById("affectedward");
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const hospitalSelect = document.getElementById("hospitalid");
+            const wardSelect = document.getElementById("affectedward");
 
-        hospitalSelect.addEventListener("change", function () {
-            const hospitalId = this.value;
+            function loadDepartments(hospitalId) {
+                if (!hospitalId) return;
 
-            if (hospitalId) {
                 wardSelect.disabled = false;
                 wardSelect.innerHTML = '<option value="">Please Select</option>';
 
@@ -407,17 +444,31 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                             opt.text = dept.text;
                             wardSelect.appendChild(opt);
                         });
+
+                        // Optional: reselect if editing
+                        const selectedWard = wardSelect.getAttribute("data-selected");
+                        if (selectedWard) {
+                            wardSelect.value = selectedWard;
+                        }
                     })
                     .catch(err => {
                         console.error("Failed to load departments", err);
                     });
-            } else {
-                wardSelect.disabled = true;
-                wardSelect.innerHTML = '<option value="">Please Select</option>';
+            }
+
+            //  For admins: trigger on change
+            hospitalSelect.addEventListener("change", function () {
+                loadDepartments(this.value);
+            });
+
+            //  For everyone: trigger on page load if value exists
+            if (hospitalSelect.value) {
+                loadDepartments(hospitalSelect.value);
             }
         });
-    });
-</script>
+    </script>
+
+
 
 @* <!---SECTION B---> *@
 <script>
@@ -645,33 +696,45 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             const hospitalSelect = document.getElementById("hospitalid");
             const investigatedBySelect = document.getElementById("invesitgatedby");
 
-            hospitalSelect.addEventListener("change", function () {
-                const hospitalId = this.value;
+            function loadInvestigators(hospitalId) {
+                if (!hospitalId) return;
 
-                if (hospitalId) {
-                    investigatedBySelect.disabled = false;
-                    investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
+                investigatedBySelect.disabled = false;
+                investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
 
-                    fetch(`/Form/GetInvestigators?hospitalId=${hospitalId}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            data.forEach(user => {
-                                const opt = document.createElement("option");
-                                opt.value = user.value;
-                                opt.text = user.text;
-                                investigatedBySelect.appendChild(opt);
-                            });
-                        })
-                        .catch(err => {
-                            console.error("Failed to load investigators", err);
+                fetch(`/Form/GetInvestigators?hospitalId=${hospitalId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(user => {
+                            const opt = document.createElement("option");
+                            opt.value = user.value;
+                            opt.text = user.text;
+                            investigatedBySelect.appendChild(opt);
                         });
-                } else {
-                    investigatedBySelect.disabled = true;
-                    investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
-                }
+
+                        // Reselect previously selected value (if any)
+                        const selectedInvestigator = investigatedBySelect.getAttribute("data-selected");
+                        if (selectedInvestigator) {
+                            investigatedBySelect.value = selectedInvestigator;
+                            investigatedBySelect.dispatchEvent(new Event('change')); // Trigger detail fetch
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Failed to load investigators", err);
+                    });
+            }
+
+            // 🔁 Admin: manual change
+            hospitalSelect.addEventListener("change", function () {
+                loadInvestigators(this.value);
             });
 
-            // Investigator details populate when investigator selected
+            // 🧠 Everyone: fire on load if value exists
+            if (hospitalSelect.value) {
+                loadInvestigators(hospitalSelect.value);
+            }
+
+            // Investigator details fetch
             investigatedBySelect.addEventListener("change", function () {
                 const loginname = this.value;
 
@@ -680,9 +743,9 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                         .then(res => res.json())
                         .then(data => {
                             if (data) {
-                                document.getElementById('Name').value = data.username;
-                                document.getElementById('Surname').value = data.surname;
-                                document.getElementById('Email').value = data.email;
+                                document.getElementById('Name').value = data.username || '';
+                                document.getElementById('Surname').value = data.surname || '';
+                                document.getElementById('Email').value = data.email || '';
                             } else {
                                 document.getElementById('Name').value = '';
                                 document.getElementById('Surname').value = '';
@@ -702,6 +765,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             });
         });
     </script>
+
 
 
 @* SECTION D *@

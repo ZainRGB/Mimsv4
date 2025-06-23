@@ -8,14 +8,10 @@
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
 }
-<p>Logged-in Hospital ID: <strong>@loginHospitalId</strong></p>
-<p>Model Hospital ID: <strong>@Model.inserthospitalid</strong></p>
+
 
 <h3>New Incident Form</h3>
 Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
-<br />
-<input type="text" asp-for="invesitgatedby" />
-<p>Name: @Context.Session.GetString("loginname");</p>
 
 
 
@@ -25,16 +21,18 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
     <input type="hidden" asp-for="CapturedBySurname" />
     <input type="hidden" asp-for="CapturedByTitle" />
     <input type="hidden" asp-for="CapturedByEmail" />
-    <input type="hidden" asp-for="HospitalId" />
+    <input type="text" asp-for="HospitalId" />
     <input type="hidden" asp-for="CapturedbyDpt" />
     <input type="hidden" asp-for="active" value="Y" />
     <input type="hidden" asp-for="qarid" />
     <input type="hidden" asp-for="AccessLevel" />
-    <input type="text" asp-for="inserthospitalid"/>
+    <input type="hidden" asp-for="inserthospitalid" />
     <input type="hidden" asp-for="hospitalid" />
     
 
     <section class="form_grid">
+        
+        <!---
         <div class="form_grid_item_span4e">Section A: Incident Details</div>
         <div class="form_grid_item_span2">
             <label for="hospitalid">Hospital</label>
@@ -48,6 +46,53 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <option value="">Please Select</option>
             </select>
         </div>
+        --->
+        <!-- SECTION A -->
+        <div class="form_grid_item_span4">Section A: Incident Details</div>
+
+        <div class="form_grid_item_span2">
+
+            @if (Model.AccessLevel == "admin")
+            {
+                <label for="hospitalid">Hospital</label>
+                <select class="form-control" asp-for="inserthospitalid " asp-items="Model.Hospitals" id="hospitalid">
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+                <span class="invalid-feedback" id="hospitalid-error">* Please select a Hospital</span>
+            }
+            else
+            {
+                var inserthospitalid = Context.Session.GetString("loginhospitalid");
+                <label for="hospitalid">Hospital</label>
+                <select class="form-control" asp-for="inserthospitalid"  id="hospitalid">
+                    <option value="@Model.inserthospitalid" selected></option>
+                </select>
+            }
+        </div>
+
+        <div class="form_grid_item_span2">
+            @if (Model.AccessLevel == "admin")
+            {
+                <label for="affectedward">Affected Ward</label>
+                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward" disabled>
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+                <span id="" class="text-danger" style="display:none;"></span>
+                <span class="invalid-feedback" id="affectedward-error">* Please select a Ward</span>
+            }
+            else
+            {
+                <label for="affectedward">Affected Ward</label>
+                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward" data-selected="@Model.affectedward">
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+            }
+
+        </div>
+        <!-- SECTION A -->
+
+
+
         <div class="form_grid_item_span4e">Section B: Person Involved</div>
         <div class="form_grid_item">
             <label for="inctypescat1">Type of Incident</label>
@@ -163,20 +208,11 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <select class="form-control" asp-for="invesitgatedby" asp-items="@Model.Investigators" id="invesitgatedby" >
                 <option value="@Model.invesitgatedby" selected>@Model.invesitgatedby</option>
             </select>
-            <input type="text" class="form-control" asp-for="invesitgatedby" >
         </div>
-        <div class="form_grid_item">
-            <label for="Name">Name</label><br />
-            <input type="text" class="form-control" id="Name" readonly>
-        </div>
-        <div class="form_grid_item">
-            <label for="Surname">Surname</label><br />
-            <input type="text" class="form-control" id="Surname" readonly>
-        </div>
-        <div class="form_grid_item">
-            <label for="Email">Email</label><br />
-            <input type="text" class="form-control" id="Email" readonly>
-        </div>
+        <div class="form_grid_item"></div>
+
+        <div class="form_grid_item"></div>
+        <div class="form_grid_item"></div>
         
         
         <div class="form_grid_item_span4e">Section D: Describe the Incident </div>
@@ -326,17 +362,10 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
         <div class="grid_item"></div>
 
-        <div class="form_grid_item_span2">
-            <input type="hidden" id="qarid" value="@Model.QarId" />
 
-            <div class="form-group mt-3">
-                <label for="fileUpload">Upload Attachment</label>
-                <input type="file" id="fileUpload" class="form-control" />
-                <button type="button" class="btn btn-secondary mt-2" onclick="uploadSimpleAttachment()">Upload Attachment</button>
-            </div>
 
-        </div>
-        <div class="form_grid_item_span2">
+
+        <div class="form_grid_item_span3_nc">
             <div class="uploaded-file-entry">
                 @if (Model.Attachments != null && Model.Attachments.Any())
                 {
@@ -361,11 +390,18 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 }
 
             </div>
+
         </div>
 
+        <div class="grid_item>
+            <input type="hidden" id="qarid" value="@Model.QarId" />
 
-
-
+        <div class="form-group mt-3">
+            <label for="fileUpload">Upload Attachment</label>
+            <input type="file" id="fileUpload" class="form-control" />
+            <button type="button" class="btn btn-secondary mt-2" onclick="uploadSimpleAttachment()">Upload Attachment</button>
+        </div>
+        </div>
 
         <div class="form_grid_item_span4e_nc">
             <script>
@@ -395,7 +431,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
        
 
         <div class="form_grid_item_span4e_nc">
-
+            <br /><br />
             <button type="submit" class="btn btn-primary mt-4" style="display:inline;vertical-align:bottom;">Update Incident</button>
 
             <input type="hidden" id="existingCat1" value="@Model.pte" />
@@ -404,23 +440,28 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <input type="hidden" id="existingCat4" value="@Model.inctypescat2" />
 
 
-
-<a class="btn btn-info" href="@Url.Action("ViewAllIncidents", "Form")" style="display:inline;vertical-align:bottom;">
-    Close
-</a>
-            <form asp-action="DeleteIncident" method="post" style="display:inline;float:right;vertical-align:bottom;" onsubmit="return confirm('Are you sure you want to delete this incident?');">
-                <input type="hidden" name="qarid" value="@Model.qarid" />
-                <button type="submit" class="btn btn-danger">Delete Incident</button>
-            </form>
-            <br><br />
+            <span style="display:inline;vertical-align:bottom;">
+            <a class="btn btn-secondary" href="@Url.Action("ViewAllIncidents", "Form")" >
+                Close
+            </a>
+            </span>          
+           
         </div>
 
-    </section>
 
 
 </form>
+<div class="form_grid_item_span4e_nc">
+<span style="display:inline;float:right;vertical-align:top;">
+    <form asp-controller="Form" asp-action="DeleteIncident" method="POST" onsubmit="return confirm('Are you sure you want to delete this incident?');" style="display:inline;float:right;vertical-align:bottom;">
+        <input type="hidden" name="qarid" value="@Model.qarid" />
+        <button type="submit" class="btn btn-danger">Delete Incident</button>
+    </form>
+    </div>
+</span>
 
 
+    </section>
 
 
 @* <!---SECTION A---> *@
@@ -431,31 +472,42 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             const hospitalSelect = document.getElementById("hospitalid");
             const wardSelect = document.getElementById("affectedward");
 
-            hospitalSelect.addEventListener("change", function () {
-                const hospitalId = this.value;
+            function loadDepartments(hospitalId) {
+                if (!hospitalId) return;
 
-                if (hospitalId) {
-                    wardSelect.disabled = false;
-                    wardSelect.innerHTML = '<option value="">Please Select</option>';
+                wardSelect.disabled = false;
+                wardSelect.innerHTML = '<option value="">Please Select</option>';
 
-                    fetch(`/Form/GetDepartmentsByHospital?hospitalId=${hospitalId}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            data.forEach(dept => {
-                                const opt = document.createElement("option");
-                                opt.value = dept.value;
-                                opt.text = dept.text;
-                                wardSelect.appendChild(opt);
-                            });
-                        })
-                        .catch(err => {
-                            console.error("Failed to load departments", err);
+                fetch(`/Form/GetDepartmentsByHospital?hospitalId=${hospitalId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(dept => {
+                            const opt = document.createElement("option");
+                            opt.value = dept.value;
+                            opt.text = dept.text;
+                            wardSelect.appendChild(opt);
                         });
-                } else {
-                    wardSelect.disabled = true;
-                    wardSelect.innerHTML = '<option value="">Please Select</option>';
-                }
+
+                        // Optional: reselect if editing
+                        const selectedWard = wardSelect.getAttribute("data-selected");
+                        if (selectedWard) {
+                            wardSelect.value = selectedWard;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Failed to load departments", err);
+                    });
+            }
+
+            //  For admins: trigger on change
+            hospitalSelect.addEventListener("change", function () {
+                loadDepartments(this.value);
             });
+
+            //  For everyone: trigger on page load if value exists
+            if (hospitalSelect.value) {
+                loadDepartments(hospitalSelect.value);
+            }
         });
     </script>
 
@@ -715,72 +767,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
 
 
-    @{
-        var selectedInvestigator = Model?.invesitgatedby ?? "";
-    }
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const hospitalSelect = document.getElementById("hospitalid");
-            const investigatedBySelect = document.getElementById("invesitgatedby");
-
-            hospitalSelect.addEventListener("change", function () {
-                const hospitalId = this.value;
-
-                if (hospitalId) {
-                    investigatedBySelect.disabled = false;
-                    investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
-
-                    fetch(`/Form/GetInvestigators?hospitalId=${hospitalId}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            data.forEach(user => {
-                                const opt = document.createElement("option");
-                                opt.value = user.value;
-                                opt.text = user.text;
-                                investigatedBySelect.appendChild(opt);
-                            });
-                        })
-                        .catch(err => {
-                            console.error("Failed to load investigators", err);
-                        });
-                } else {
-                    investigatedBySelect.disabled = true;
-                    investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
-                }
-            });
-
-            // Investigator details populate when investigator selected
-            investigatedBySelect.addEventListener("change", function () {
-                const loginname = this.value;
-
-                if (loginname) {
-                    fetch(`/Form/GetInvestigatorDetails?loginname=${loginname}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data) {
-                                document.getElementById('Name').value = data.username;
-                                document.getElementById('Surname').value = data.surname;
-                                document.getElementById('Email').value = data.email;
-                            } else {
-                                document.getElementById('Name').value = '';
-                                document.getElementById('Surname').value = '';
-                                document.getElementById('Email').value = '';
-                            }
-                        })
-                        .catch(() => {
-                            document.getElementById('Name').value = '';
-                            document.getElementById('Surname').value = '';
-                            document.getElementById('Email').value = '';
-                        });
-                } else {
-                    document.getElementById('Name').value = '';
-                    document.getElementById('Surname').value = '';
-                    document.getElementById('Email').value = '';
-                }
-            });
-        });
-    </script>
+   
 
 
     @* SECTION D *@

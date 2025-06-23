@@ -1,10 +1,37 @@
 ﻿@using System.Security.Claims
+@using Npgsql
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration _configuration
 @{
     var user = (ClaimsPrincipal)User;
     var accessLevel = user.FindFirst("AccessLevel")?.Value?.ToLower(); // e.g., "admin", "main", "local"
     var isAuthenticated = User.Identity.IsAuthenticated;
 }
 
+@{
+    string hospitalNames = "";
+    string hospitalAbbrs = "";
+    var LoginhospitalId = Context.Session.GetString("loginhospitalid");
+
+    if (!string.IsNullOrEmpty(LoginhospitalId))
+    {
+        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        conn.Open();
+
+        using var cmd = new NpgsqlCommand("SELECT hospital, abbr FROM tblhospitals WHERE hospitalid = @LoginhospitalId", conn);
+        cmd.Parameters.AddWithValue("LoginhospitalId", LoginhospitalId); 
+
+        using var reader = cmd.ExecuteReader();
+        if (reader.Read())
+        {
+            hospitalNames = reader["hospital"]?.ToString();
+            hospitalAbbrs = reader["abbr"]?.ToString();
+        }
+    }
+
+    ViewBag.HospitalName = hospitalNames;
+    ViewBag.HospitalAbbr = hospitalAbbrs;
+}
 
 
 <!DOCTYPE html>
@@ -23,6 +50,11 @@
     <div id="spinner-overlay">
         <div class="spinner"></div>
     </div>
+
+
+
+
+
 
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 sticky-top" >
@@ -243,12 +275,12 @@
                 <div class="nav-item">
                     <a asp-controller="Form" asp-action="ViewAllIncidents">
                         <div class="tooltip-container group">
-                            <div class="icon"><i class="bi bi-speedometer"></i></div>
+                            <div class="icon"><i class="bi bi-files"></i></div>
                             <span class="tooltip-text">
-                                View Incidents
+                                Incidents
                             </span>
                         </div>
-                        <span class="text">View Incidents</span>
+                        <span class="text">Incidents</span>
                     </a>
                 </div>
 
