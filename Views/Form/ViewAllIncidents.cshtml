@@ -18,6 +18,7 @@
             <th>Summary</th>
             <th>Hospital ID</th>
             <th>Status</th>
+            <th>affectedward</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -30,6 +31,7 @@
                 <td>@incident.investigation</td>
                 <td>@incident.hospitalid</td>
                 <td>@incident.status</td>
+                <td>@incident.affectedward</td>
                 <td>
                     <a class="btn btn-success" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid, inserthospitalid = incident.hospitalid })">Edit</a>
                 </td>

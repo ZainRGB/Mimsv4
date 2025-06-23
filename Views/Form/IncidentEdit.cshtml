@@ -13,7 +13,8 @@
 <h3>New Incident Form</h3>
 Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
 
-
+<p>Hospital ID from model: [@Model.HospitalName]</p>
+<p>Hospital ID from Login: [@loginHospitalId]</p>
 
 <form asp-action="EditIncident" method="post" id="incidentForm" style="min-height:200vh;display:inline;">
     <input type="hidden" asp-for="CapturedByLoginName" />
@@ -21,7 +22,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
     <input type="hidden" asp-for="CapturedBySurname" />
     <input type="hidden" asp-for="CapturedByTitle" />
     <input type="hidden" asp-for="CapturedByEmail" />
-    <input type="text" asp-for="HospitalId" />
+    <input type="hidden" asp-for="HospitalId" />
     <input type="hidden" asp-for="CapturedbyDpt" />
     <input type="hidden" asp-for="active" value="Y" />
     <input type="hidden" asp-for="qarid" />
@@ -55,18 +56,19 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             @if (Model.AccessLevel == "admin")
             {
                 <label for="hospitalid">Hospital</label>
-                <select class="form-control" asp-for="inserthospitalid " asp-items="Model.Hospitals" id="hospitalid">
-                    <option value="" selected disabled>Please Select</option>
+                <select class="form-control" asp-for="inserthospitalid " asp-items="Model.Hospitals" data-selected="@Model.inserthospitalid" id="hospitalid">
+                    <option value="" selected >Please Select</option>
                 </select>
                 <span class="invalid-feedback" id="hospitalid-error">* Please select a Hospital</span>
             }
             else
             {
                 var inserthospitalid = Context.Session.GetString("loginhospitalid");
-                <label for="hospitalid">Hospital</label>
-                <select class="form-control" asp-for="inserthospitalid"  id="hospitalid">
-                    <option value="@Model.inserthospitalid" selected></option>
-                </select>
+                <label for="inserthospitalid">Hospital</label>
+                <input type="text" class="form-control" value="@Model.HospitalName" readonly />
+
+                <!-- Hidden field to submit -->
+                <input type="text" asp-for="inserthospitalid" value="@inserthospitalid" />
             }
         </div>
 
@@ -74,19 +76,19 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             @if (Model.AccessLevel == "admin")
             {
                 <label for="affectedward">Affected Ward</label>
-                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward" disabled>
-                    <option value="" selected disabled>Please Select</option>
+                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward"
+                        data-selected="@Model.affectedward">
                 </select>
-                <span id="" class="text-danger" style="display:none;"></span>
                 <span class="invalid-feedback" id="affectedward-error">* Please select a Ward</span>
             }
             else
             {
                 <label for="affectedward">Affected Ward</label>
-                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward" data-selected="@Model.affectedward">
-                    <option value="" selected disabled>Please Select</option>
+                <select class="form-control" asp-for="affectedward" asp-items="Model.Departments" id="affectedward"
+                        data-selected="@Model.affectedward" disabled>
                 </select>
             }
+
 
         </div>
         <!-- SECTION A -->
@@ -203,9 +205,10 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             <input type="date" class="form-control" asp-for="datereported" id="datereported">
         </div>
         
+        <!---
         <div class="form_grid_item">
             <label for="invesitgatedby">Investigated By</label>
-            <select class="form-control" asp-for="invesitgatedby" asp-items="@Model.Investigators" id="invesitgatedby" >
+            <select id="invesitgatedby" class="form-control" asp-for="invesitgatedby" data-selected="@Model.invesitgatedby" asp-items="Model.Investigators"></select>
                 <option value="@Model.invesitgatedby" selected>@Model.invesitgatedby</option>
             </select>
         </div>
@@ -213,7 +216,70 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
 
         <div class="form_grid_item"></div>
         <div class="form_grid_item"></div>
-        
+        --->
+
+        @if (Model.AccessLevel == "admin")
+        {
+            <div class="form_grid_item">
+                <label for="invesitgatedby">Investigated By</label>
+                <select class="form-control" asp-for="invesitgatedby" data-selected="@Model.invesitgatedby" id="invesitgatedby" disabled>
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+                <span class="invalid-feedback" id="invesitgatedby-error">* Required Field</span>
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Name">Name</label><br />
+                <input type="text" class="form-control" name="InvName" id="Name" readonly>
+
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Surname">Surname</label><br />
+                <input type="text" class="form-control" name="InvSurname" id="Surname" readonly>
+
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Email">Email</label><br />
+                <input type="text" class="form-control" id="Email" readonly>
+
+            </div>
+
+        }
+        else
+        {
+            <div class="form_grid_item">
+                <label for="invesitgatedby">Investigated By</label>
+                <select class="form-control" asp-for="invesitgatedby" data-selected="@Model.invesitgatedby" id="invesitgatedby" data-selected="@Model.invesitgatedby">
+                    <option value="" selected disabled>Please Select</option>
+                </select>
+                <span class="invalid-feedback" id="invesitgatedby-error">* Required Field</span>
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Name">Name</label><br />
+                <input type="text" class="form-control" name="InvName" id="Name" readonly>
+
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Surname">Surname</label><br />
+                <input type="text" class="form-control" name="InvSurname" id="Surname" readonly>
+
+            </div>
+
+            <div class="form_grid_item">
+                <label for="Email">Email</label><br />
+                <input type="text" class="form-control" id="Email" readonly>
+
+            </div>
+
+
+        }
+
+
+
         
         <div class="form_grid_item_span4e">Section D: Describe the Incident </div>
         <div class="form_grid_item">
@@ -473,8 +539,9 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
             const wardSelect = document.getElementById("affectedward");
 
             function loadDepartments(hospitalId) {
-                if (!hospitalId) return;
+                if (!hospitalId || !wardSelect) return;
 
+                const selectedWard = wardSelect.getAttribute("data-selected")?.trim();
                 wardSelect.disabled = false;
                 wardSelect.innerHTML = '<option value="">Please Select</option>';
 
@@ -488,28 +555,105 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                             wardSelect.appendChild(opt);
                         });
 
-                        // Optional: reselect if editing
-                        const selectedWard = wardSelect.getAttribute("data-selected");
                         if (selectedWard) {
                             wardSelect.value = selectedWard;
+                            console.log("✅ Ward selected:", wardSelect.value);
                         }
                     })
                     .catch(err => {
-                        console.error("Failed to load departments", err);
+                        console.error("❌ Failed to load departments", err);
                     });
             }
 
-            //  For admins: trigger on change
-            hospitalSelect.addEventListener("change", function () {
-                loadDepartments(this.value);
-            });
+            if (hospitalSelect) {
+                // Trigger department loading on hospital change (admin)
+                hospitalSelect.addEventListener("change", function () {
+                    loadDepartments(this.value);
+                });
 
-            //  For everyone: trigger on page load if value exists
-            if (hospitalSelect.value) {
-                loadDepartments(hospitalSelect.value);
+                // Load on page load
+                if (hospitalSelect.value) {
+                    loadDepartments(hospitalSelect.value);
+                }
             }
         });
     </script>
+
+
+    @* <!---SECTION C---> *@
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const hospitalSelect = document.getElementById("hospitalid");
+            const investigatedBySelect = document.getElementById("invesitgatedby");
+
+            function loadInvestigators(hospitalId) {
+                if (!hospitalId || !investigatedBySelect) return;
+
+                const selectedInvestigator = investigatedBySelect.getAttribute("data-selected")?.trim();
+
+                investigatedBySelect.disabled = false;
+                investigatedBySelect.innerHTML = '<option value="">Please Select</option>';
+
+                fetch(`/Form/GetInvestigators?hospitalId=${hospitalId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(user => {
+                            const opt = document.createElement("option");
+                            opt.value = user.value;
+                            opt.text = user.text;
+                            investigatedBySelect.appendChild(opt);
+                        });
+
+                        if (selectedInvestigator) {
+                            investigatedBySelect.value = selectedInvestigator;
+                            investigatedBySelect.dispatchEvent(new Event('change')); // Trigger detail fetch
+                            console.log(" Investigator selected:", investigatedBySelect.value);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(" Failed to load investigators", err);
+                    });
+            }
+
+            if (hospitalSelect) {
+                hospitalSelect.addEventListener("change", function () {
+                    loadInvestigators(this.value);
+                });
+
+                if (hospitalSelect.value) {
+                    loadInvestigators(hospitalSelect.value);
+                }
+            }
+
+            if (investigatedBySelect) {
+                investigatedBySelect.addEventListener("change", function () {
+                    const loginname = this.value;
+
+                    if (loginname) {
+                        fetch(`/Form/GetInvestigatorDetails?loginname=${loginname}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                document.getElementById('Name').value = data?.username || '';
+                                document.getElementById('Surname').value = data?.surname || '';
+                                document.getElementById('Email').value = data?.email || '';
+                            })
+                            .catch(() => {
+                                document.getElementById('Name').value = '';
+                                document.getElementById('Surname').value = '';
+                                document.getElementById('Email').value = '';
+                            });
+                    } else {
+                        document.getElementById('Name').value = '';
+                        document.getElementById('Surname').value = '';
+                        document.getElementById('Email').value = '';
+                    }
+                });
+            }
+        });
+    </script>
+
+    @* <!---SECTION C---> *@
+
 
     @* <!---SECTION B---> *@
     <script>

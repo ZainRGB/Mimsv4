@@ -1043,12 +1043,34 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                 }
             }
 
+
+
+            var loginhospitalid = HttpContext.Session.GetString("loginhospitalid");
+            model.inserthospitalid = loginhospitalid;
+
+            if (!string.IsNullOrEmpty(loginhospitalid))
+            {
+                //using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+                //await conn.OpenAsync();
+
+                using var cmd = new NpgsqlCommand("SELECT hospital, abbr FROM tblhospitals WHERE hospitalid = @id", conn);
+                cmd.Parameters.AddWithValue("id", loginhospitalid);
+
+                using var reader = await cmd.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                {
+                    model.HospitalName = reader["hospital"]?.ToString();
+                    model.HospitalAbbr = reader["abbr"]?.ToString();
+                }
+            }
+
+
             // 3. Extra setup
             //await GetInvestigators(int.Parse(model.hospitalid));
 
             //model.Investigators = await GetInvestigators(int.Parse(model.hospitalid));
             //model.invesitgatedby = "Zain Slamdien";
-            
+
             model.Investigators = await GetInvestigators(int.Parse(model.hospitalid));
 
 
@@ -1390,32 +1412,58 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         //end upload attachements
 
         //view incidents
-        [HttpGet]
-        public async Task<IActionResult> ViewAllIncidents()
+
+
+[HttpGet]
+public async Task<IActionResult> ViewAllIncidents()
+{
+    var incidents = new List<FormModel>();
+
+    var accessLevel = HttpContext.Session.GetString("accessLevel");
+    var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
+    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+    await conn.OpenAsync();
+
+    string sql;
+    var cmd = new NpgsqlCommand();
+
+    if (accessLevel == "admin")
+    {
+        sql = @"SELECT * FROM tblincident 
+                WHERE active = 'Y' 
+                ORDER BY id DESC 
+                LIMIT 100";
+        cmd = new NpgsqlCommand(sql, conn);
+    }
+    else
+    {
+        sql = @"SELECT * FROM tblincident 
+                WHERE active = 'Y' 
+                AND hospitalid = @hospitalid 
+                ORDER BY id DESC 
+                LIMIT 100";
+        cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+    }
+
+    using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        incidents.Add(new FormModel
         {
-            var incidents = new List<FormModel>();
+            qarid = reader["qarid"]?.ToString(),
+            incidentdate = reader["incidentdate"] as DateTime?,
+            summary = reader["summary"]?.ToString(),
+            hospitalid = reader["hospitalid"]?.ToString(),
+            status = reader["status"]?.ToString(),
+            affectedward = reader["affectedward"]?.ToString(),
+        });
+    }
 
-            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            await conn.OpenAsync();
+    return View("ViewAllIncidents", incidents);
+}
 
-            string sql = @"SELECT * FROM tblincident WHERE active = 'Y' ORDER BY id DESC limit 10";
-
-            using var cmd = new NpgsqlCommand(sql, conn);
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                incidents.Add(new FormModel
-                {
-                    qarid = reader["qarid"]?.ToString(),
-                    incidentdate = reader["incidentdate"] as DateTime?,
-                    summary = reader["summary"]?.ToString(),
-                    hospitalid = reader["hospitalid"]?.ToString(),
-                    status = reader["status"]?.ToString()
-                });
-            }
-
-            return View("ViewAllIncidents", incidents);
-        }
 
         //view incidents
 

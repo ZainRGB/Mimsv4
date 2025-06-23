@@ -12,18 +12,13 @@
 else
 {
     <p class="text-muted">Standard access - admin sections are hidden.</p>
+ 
 }
 
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
 }
 
-<div class="alert alert-info mt-2">
-    <strong>Hospital:</strong> @ViewBag.hospitalNames
-</div>
-
-
-<p>@loginHospitalId</p>
 
 <h3>New Incident Form</h3>
 Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))

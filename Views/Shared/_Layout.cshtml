@@ -1,37 +1,10 @@
 ﻿@using System.Security.Claims
-@using Npgsql
-@using Microsoft.Extensions.Configuration
-@inject IConfiguration _configuration
 @{
     var user = (ClaimsPrincipal)User;
     var accessLevel = user.FindFirst("AccessLevel")?.Value?.ToLower(); // e.g., "admin", "main", "local"
     var isAuthenticated = User.Identity.IsAuthenticated;
 }
 
-@{
-    string hospitalNames = "";
-    string hospitalAbbrs = "";
-    var LoginhospitalId = Context.Session.GetString("loginhospitalid");
-
-    if (!string.IsNullOrEmpty(LoginhospitalId))
-    {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        conn.Open();
-
-        using var cmd = new NpgsqlCommand("SELECT hospital, abbr FROM tblhospitals WHERE hospitalid = @LoginhospitalId", conn);
-        cmd.Parameters.AddWithValue("LoginhospitalId", LoginhospitalId); 
-
-        using var reader = cmd.ExecuteReader();
-        if (reader.Read())
-        {
-            hospitalNames = reader["hospital"]?.ToString();
-            hospitalAbbrs = reader["abbr"]?.ToString();
-        }
-    }
-
-    ViewBag.HospitalName = hospitalNames;
-    ViewBag.HospitalAbbr = hospitalAbbrs;
-}
 
 
 <!DOCTYPE html>

@@ -139,5 +139,7 @@ namespace Mimsv2.Models
         public string InvSurname { get; set; }
 
         public string HospitalName { get; set; }
+        public string HospitalAbbr { get; set; }
+     
     }
 }
