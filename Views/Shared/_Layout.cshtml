@@ -51,17 +51,6 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Register">Register</a>
                         </li>
-@* 
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="ForgotPassword">Forgot Password</a>
-                        </li>
-
-                        <li>
-                            <form asp-controller="Login" asp-action="Logout" method="post" id="logoutForm">
-                                <button type="submit" class="btn btn-link">Logout</button>
-                            </form>
-                        </li> *@
 
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item" style="display:inline;">
@@ -69,15 +58,15 @@
                                 @if (isAuthenticated)
                                 {
                                     var name = Context.Session.GetString("username") ?? "Guest";
-                                    var surname = Context.Session.GetString("surname") ?? "GuestSurname";
-                                   <p style="color:orangered;margin-right:20px;font-weight:500;">Hi @name @surname
+                                    var surname = Context.Session.GetString("surname") ?? "Guest Surname";
+                                    <p style="color:orangered;margin-right:20px;font-weight:500;">Hi @name @surname
 
                                         <a asp-controller="Login" asp-action="Logout" method="post" id="logoutForm" style="display:inline-block;margin-left:20px;">
                                             <i class="bi bi-box-arrow-left"></i> Logout
-										</a>
-									</p>
+                                        </a>
+                                    </p>
                                 }
-                       
+
                             </li>
                         </ul>
 
@@ -86,6 +75,23 @@
             </div>
         </nav>
     </header>
+
+
+
+
+    @{
+        var isLoggedIn = Context.Session.GetString("loginhospitalid") != null;
+    }
+
+    @if (isLoggedIn)
+    {
+     
+    }
+    else
+    {
+       
+    }
+
 
 
     @if (isAuthenticated)
@@ -99,12 +105,12 @@
                 @if (accessLevel == "admin")
                 {
 
-                    
-                <div class="nav-item">
+
+                    <div class="nav-item">
                     <a asp-controller="Home" asp-action="AdminDashboard">
-                            <div class="tooltip-container group">
-                        <div class="icon"><i class="bi bi-house-gear-fill"></i></div>
-                                <span class="tooltip-text">
+                            <div class="tooltip-container group" >
+                                <div class="icon" style="color:#2692c4;"><i class="bi bi-house-gear-fill"></i></div>
+                                <span class="tooltip-text" style="color:#2692c4;">
                                     Home
                                 </span>
                             </div>
@@ -118,12 +124,24 @@
                     <div class="nav-item">
                         <a asp-controller="Form" asp-action="IncidentForm">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-file-text"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon" style="color:#c43226;"><i class="bi bi-file-text"></i></div>
+                                <span class="tooltip-text" style="color:#c43226;">
                                     New Incident
                                 </span>
                             </div>
                             <span class="text">New Incident</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a asp-controller="Risk" asp-action="Index">
+                            <div class="tooltip-container group">
+                                <div class="icon"><i class="bi bi-exclamation-diamond"></i></div>
+                                <span class="tooltip-text">
+                                    Risk Assess
+                                </span>
+                            </div>
+                            <span class="text">Risk Assess</span>
                         </a>
                     </div>
 
@@ -191,6 +209,18 @@
                     </div>
 
                     <div class="nav-item">
+                        <a asp-controller="Risk" asp-action="Index">
+                            <div class="tooltip-container group">
+                                <div class="icon"><i class="bi bi-exclamation-diamond"></i></div>
+                                <span class="tooltip-text">
+                                    Risk Assess
+                                </span>
+                            </div>
+                            <span class="text">Risk Assess</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
                         <a href="">
                             <div class="icon"><i class="bi bi-list-check"></i></div>
                             <span class="text">Categories</span>
@@ -230,6 +260,18 @@
                                 </span>
                             </div>
                             <span class="text">New Incident</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a asp-controller="Risk" asp-action="Index">
+                            <div class="tooltip-container group">
+                                <div class="icon"><i class="bi bi-exclamation-diamond"></i></div>
+                                <span class="tooltip-text">
+                                    Risk Assess
+                                </span>
+                            </div>
+                            <span class="text">Risk Assess</span>
                         </a>
                     </div>
 

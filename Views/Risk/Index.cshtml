@@ -1,0 +1,118 @@
+﻿@model List<RiskModel>
+@{
+    ViewData["Title"] = "Risk Management";
+}
+
+<h2>Risk Management</h2>
+
+
+<form asp-action="AddRisk" method="post">
+
+<section class="form_grid">
+    <div class="form_grid_item_span4">
+        Risk Assessment Form
+    </div>
+
+    <div class="form_grid_item">
+    <lable>Risk Title</lable><br />
+            <input type="text" class="form-control" name="RiskTitle" placeholder="Risk Title" required />
+        </div>
+
+        <div class="form_grid_item">
+            <lable>Risk Type</lable><br />
+            <select name="RiskType" class="form-control">
+                <option value="" selected disabled>Please Select</option>
+                <option value="Clinical">Clinical</option>
+                <option value="Safety">Safety</option>
+                <option value="Security">Security</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Environmental">Environmental</option>
+            </select>
+        </div>
+
+        <div class="form_grid_item">
+            <lable>Risk Level</lable><br />
+            <select name="RiskLevel" class="form-control">
+                <option value="" selected disabled>Please Select</option>
+                <option value="Low">Low</option>
+                <option value="Moderate">Moderate</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+            </select>
+        </div>
+
+        <div class="form_grid_item">
+            <lable>Risk Status</lable><br />
+            <select name="Status" class="form-control">
+                <option value="Open" selected>Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Closed">Closed</option>
+            </select>
+            
+    </div>
+
+            <div class="form_grid_item">
+            <lable>Responsible Person</lable><br />
+            <input type="text" name="ResponsiblePerson" class="form-control" placeholder="Responsible Person" />
+            </div>
+            <div class="form_grid_item">
+            <lable>Target Date</lable><br />
+            <input type="date" name="TargetDate" class="form-control" />
+            </div>
+        <div class="form_grid_item">
+            <lable>Root Cause</lable><br />
+            <textarea name="RootCause" class="form-control" placeholder="Root Cause"></textarea>
+        </div>
+        <div class="form_grid_item">
+            <lable>Near Root Cause</lable><br />
+            <textarea name="NearRootCause" class="form-control" placeholder="Near Root Cause"></textarea>
+        </div>
+
+
+
+            <div class="form_grid_item_span4_nc">
+            <lable>Prevenative Action</lable><br />
+            <textarea name="PreventativeAction" class="form-control" placeholder="Preventative Action"></textarea>
+            </div>
+
+            <div class="form_grid_item_span4_nc">
+            <button class="btn btn-primary" type="submit">Add Risk</button>
+
+        </div>
+    </section>
+</form>
+
+
+
+<hr />
+
+<table class="form_table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Level</th>
+            <th>Status</th>
+            <th>Target Date</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var risk in Model)
+        {
+            <tr>
+                <td>@risk.RiskTitle</td>
+                <td>@risk.RiskType</td>
+                <td>@risk.RiskLevel</td>
+                <td>@risk.Status</td>
+                <td>@risk.TargetDate.ToShortDateString()</td>
+                <td>
+                <form asp-controller="Risk" asp-action="DeleteRisk" method="POST" onsubmit="return confirm('Are you sure you want to delete this Risk?');">
+                <input type="hidden" name="Id" value="@risk.Id" />
+                <button type="submit" class="btn btn-danger">Delete Risk</button>
+                </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

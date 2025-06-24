@@ -68,7 +68,7 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 <input type="text" class="form-control" value="@Model.HospitalName" readonly />
 
                 <!-- Hidden field to submit -->
-                <input type="text" asp-for="inserthospitalid" value="@inserthospitalid" />
+                <input type="hidden" asp-for="inserthospitalid" value="@inserthospitalid" />
             }
         </div>
 
