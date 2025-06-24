@@ -105,27 +105,24 @@
                 @if (accessLevel == "admin")
                 {
 
-
                     <div class="nav-item">
-                    <a asp-controller="Home" asp-action="AdminDashboard">
-                            <div class="tooltip-container group" >
-                                <div class="icon" style="color:#2692c4;"><i class="bi bi-house-gear-fill"></i></div>
-                                <span class="tooltip-text" style="color:#2692c4;">
+                        <a asp-controller="Home" asp-action="AdminDashboard">
+                            <div class="tooltip-container group">
+                                <div class="icon clr1"><i class="bi bi-house-gear-fill"></i></div>
+                                <span class="tooltip-text clr1">
                                     Home
                                 </span>
                             </div>
-                        <span class="text">Home</span>
-                    </a>
-                </div>
-
-
+                            <span class="text">Home</span>
+                        </a>
+                    </div>
 
 
                     <div class="nav-item">
                         <a asp-controller="Form" asp-action="IncidentForm">
                             <div class="tooltip-container group">
-                                <div class="icon" style="color:#c43226;"><i class="bi bi-file-text"></i></div>
-                                <span class="tooltip-text" style="color:#c43226;">
+                                <div class="icon clr2"><i class="bi bi-file-text"></i></div>
+                                <span class="tooltip-text clr2">
                                     New Incident
                                 </span>
                             </div>
@@ -133,11 +130,12 @@
                         </a>
                     </div>
 
+
                     <div class="nav-item">
                         <a asp-controller="Risk" asp-action="Index">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-exclamation-diamond"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr3"><i class="bi bi-exclamation-diamond"></i></div>
+                                <span class="tooltip-text clr3">
                                     Risk Assess
                                 </span>
                             </div>
@@ -147,10 +145,23 @@
 
 
                     <div class="nav-item">
+                        <a asp-controller="Ward" asp-action="Index">
+                            <div class="tooltip-container group">
+                                <div class="icon clr4"><i class="bi bi-boxes"></i></div>
+                                <span class="tooltip-text clr4">
+                                    Wards
+                                </span>
+                            </div>
+                            <span class="text">Wards</span>
+                        </a>
+                    </div>
+
+
+                    <div class="nav-item">
                         <a asp-controller="Category" asp-action="Index">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-list-check"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr5"><i class="bi bi-list-check"></i></div>
+                                <span class="tooltip-text clr5">
                                     Categories
                                 </span>
                             </div>
@@ -161,23 +172,10 @@
 
 
                     <div class="nav-item">
-                        <a asp-controller="Ward" asp-action="Index">
-                            <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-boxes"></i></div>
-                                <span class="tooltip-text">
-                                    Wards
-                                </span>
-                            </div>
-                            <span class="text">Wards</span>
-                        </a>
-                    </div>
-
-
-                    <div class="nav-item">
                         <a asp-controller="Login" asp-action="Users">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-people"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr7"><i class="bi bi-people"></i></div>
+                                <span class="tooltip-text clr7">
                                     Users
                                 </span>
                             </div>
@@ -187,10 +185,15 @@
 
                 }
                 @* Hospital QA *@
-                else if (accessLevel == "admin"){
+                else if (accessLevel == "main"){
                     <div class="nav-item">
                         <a asp-controller="Home" asp-action="MainDashboard">
-                            <div class="icon"><i class="bi bi-house-gear-fill"></i></div>
+                            <div class="tooltip-container group">
+                                <div class="icon clr1"><i class="bi bi-house-gear-fill"></i></div>
+                                <span class="tooltip-text clr1">
+                                    Home
+                                </span>
+                            </div>
                             <span class="text">Home</span>
                         </a>
                     </div>
@@ -199,8 +202,8 @@
                     <div class="nav-item">
                         <a asp-controller="Form" asp-action="IncidentForm">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-file-text"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr2"><i class="bi bi-file-text"></i></div>
+                                <span class="tooltip-text clr2">
                                     New Incident
                                 </span>
                             </div>
@@ -208,11 +211,12 @@
                         </a>
                     </div>
 
+
                     <div class="nav-item">
                         <a asp-controller="Risk" asp-action="Index">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-exclamation-diamond"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr3"><i class="bi bi-exclamation-diamond"></i></div>
+                                <span class="tooltip-text clr3">
                                     Risk Assess
                                 </span>
                             </div>
@@ -220,32 +224,42 @@
                         </a>
                     </div>
 
-                    <div class="nav-item">
-                        <a href="">
-                            <div class="icon"><i class="bi bi-list-check"></i></div>
-                            <span class="text">Categories</span>
-                        </a>
-                    </div>
 
                     <div class="nav-item">
-                        <a href="">
-                            <div class="icon"><i class="bi bi-boxes"></i></div>
+                        <a asp-controller="Ward" asp-action="Index">
+                            <div class="tooltip-container group">
+                                <div class="icon clr4"><i class="bi bi-boxes"></i></div>
+                                <span class="tooltip-text clr4">
+                                    Wards
+                                </span>
+                            </div>
                             <span class="text">Wards</span>
                         </a>
                     </div>
 
                     <div class="nav-item">
                         <a asp-controller="Login" asp-action="Users">
-                            <div class="icon"><i class="bi bi-people"></i></div>
+                            <div class="tooltip-container group">
+                                <div class="icon clr7"><i class="bi bi-people"></i></div>
+                                <span class="tooltip-text clr7">
+                                    Users
+                                </span>
+                            </div>
                             <span class="text">Users</span>
                         </a>
                     </div>
 
                     @* Local Users *@
                 }else{
+
                     <div class="nav-item">
                         <a asp-controller="Home" asp-action="LocalDashboard">
-                            <div class="icon"><i class="bi bi-house-gear-fill"></i></div>
+                            <div class="tooltip-container group">
+                                <div class="icon clr1"><i class="bi bi-house-gear-fill"></i></div>
+                                <span class="tooltip-text clr1">
+                                    Home
+                                </span>
+                            </div>
                             <span class="text">Home</span>
                         </a>
                     </div>
@@ -254,20 +268,21 @@
                     <div class="nav-item">
                         <a asp-controller="Form" asp-action="IncidentForm">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-file-text"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr2"><i class="bi bi-file-text"></i></div>
+                                <span class="tooltip-text clr2">
                                     New Incident
                                 </span>
-                            </div>
+                                </div>
                             <span class="text">New Incident</span>
                         </a>
                     </div>
 
+
                     <div class="nav-item">
                         <a asp-controller="Risk" asp-action="Index">
                             <div class="tooltip-container group">
-                                <div class="icon"><i class="bi bi-exclamation-diamond"></i></div>
-                                <span class="tooltip-text">
+                                <div class="icon clr3"><i class="bi bi-exclamation-diamond"></i></div>
+                                <span class="tooltip-text clr3">
                                     Risk Assess
                                 </span>
                             </div>
@@ -277,8 +292,13 @@
 
 
                     <div class="nav-item">
-                        <a href="">
-                            <div class="icon"><i class="bi bi-boxes"></i></div>
+                        <a asp-controller="Ward" asp-action="Index">
+                            <div class="tooltip-container group">
+                                <div class="icon clr4"><i class="bi bi-boxes"></i></div>
+                                <span class="tooltip-text clr4">
+                                    Wards
+                                </span>
+                            </div>
                             <span class="text">Wards</span>
                         </a>
                     </div>
@@ -290,8 +310,8 @@
                 <div class="nav-item">
                     <a asp-controller="Form" asp-action="ViewAllIncidents">
                         <div class="tooltip-container group">
-                            <div class="icon"><i class="bi bi-files"></i></div>
-                            <span class="tooltip-text">
+                            <div class="icon clr5"><i class="bi bi-files"></i></div>
+                            <span class="tooltip-text clr5">
                                 Incidents
                             </span>
                         </div>

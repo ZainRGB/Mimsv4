@@ -24,14 +24,30 @@ namespace Mimsv2.Controllers
         {
             var users = new List<WardModel>();
 
+            var accessLevel = HttpContext.Session.GetString("accessLevel") ?? "";
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            string sql = @"SELECT *, h.hospital AS hospitalname 
-                        FROM tbldepartments d 
-                        INNER JOIN tblhospitals h ON d.hospitalid = h.hospitalid
-                        WHERE d.active = 'Y' AND description = 'ward' order by h.hospitalid ";
-            using var cmd = new NpgsqlCommand(sql, conn);
+            string sql = @"
+        SELECT *, h.hospital AS hospitalname 
+        FROM tbldepartments d 
+        INNER JOIN tblhospitals h ON d.hospitalid = h.hospitalid
+        WHERE d.active = 'Y' AND description = 'ward'";
+
+            using var cmd = new NpgsqlCommand();
+
+            if (!accessLevel.Equals("admin", StringComparison.OrdinalIgnoreCase))
+            {
+                sql += " AND d.hospitalid = @loginhospitalid";
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? (object)DBNull.Value);
+            }
+
+            sql += " ORDER BY h.hospitalid";
+            cmd.Connection = conn;
+            cmd.CommandText = sql;
+
             using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -49,6 +65,7 @@ namespace Mimsv2.Controllers
 
             return View(users);
         }
+
 
 
         //ADD WARD
@@ -191,6 +208,22 @@ namespace Mimsv2.Controllers
 
         //EDIT WARD HERE
 
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteWard(int id)
+        {
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await conn.OpenAsync();
+
+            string sql = "UPDATE tbldepartments SET active = 'N' WHERE id = @id";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            await cmd.ExecuteNonQueryAsync();
+            return RedirectToAction("Index");
+        }
 
     }
 

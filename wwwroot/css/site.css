@@ -184,29 +184,47 @@ body.shrink .side_nav .nav-item .text {
     letter-spacing: 0.75rem;
 }*/
 
+/*.icon {
+    font-size: 1.6rem;
+    display: inline-block;*/ /* Changed from 'inline' to 'inline-block' for better spacing control */
+    /*letter-spacing: 0.75rem;
+    cursor: pointer;*/ /* Indicates it's interactive */
+    /*color: #4a5568;*/ /* A darker gray for the icon */
+    /*padding: 0.25rem;*/ /* Add a little padding for easier hovering */
+    /*border-radius: 0.25rem;*/ /* Slightly rounded corners */
+    /*transition: color 0.5s ease;*/ /* Smooth transition for color change on hover */
+/*}*/
 .icon {
     font-size: 1.6rem;
-    display: inline-block; /* Changed from 'inline' to 'inline-block' for better spacing control */
-    letter-spacing: 0.75rem;
-    cursor: pointer; /* Indicates it's interactive */
-    color: #4a5568; /* A darker gray for the icon */
-    padding: 0.25rem; /* Add a little padding for easier hovering */
-    border-radius: 0.25rem; /* Slightly rounded corners */
-    transition: color 0.5s ease; /* Smooth transition for color change on hover */
+    display: inline-block;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3rem
 }
 
-    .icon:nth-of-type(1) {
-        color: red;
-    }
+.clr1 {color: #1d4ed8;}
 
-    .icon:nth-of-type(2) {
-        color: green;
-    }
+.clr2 {color: #16a34a;}
+
+.clr3 {color: #dc2626;}
+
+.clr4 {color: goldenrod;}
+
+.clr5 {color: #9333ea;}
+
+.clr6 {color: darkcyan;}
+
+.clr7 {color: rebeccapurple;}
+
+.clr8 {color: peachpuff;}
+
+.icon:hover {
+    color: limegreen;
+}
 
 
-    .icon:hover {
-        color: black; /* Darker color on hover */
-    }
 
 .tooltip-container {
     position: relative;
@@ -229,6 +247,7 @@ body.shrink .side_nav .nav-item .text {
     border-radius: 3px;
     min-width:100px;
 }
+
 
 .tooltip-container:hover .tooltip-text {
     /*visibility: visible;*/ /* Show on hover */

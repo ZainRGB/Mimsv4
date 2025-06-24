@@ -6,8 +6,10 @@
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
 }
-<p>Logged-in Hospital ID: <strong>@loginHospitalId</strong></p>
 
+@{
+    var accessLevel = Context.Session.GetString("accessLevel");
+}
 <h2> All Incidents</h2>
 
 <table class="table table-striped">
@@ -23,19 +25,31 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var incident in Model)
+        @{
+            // Group incidents by hospital name
+            var groupedByHospital = Model.GroupBy(i => i.HospitalName ?? i.hospitalid);
+        }
+
+        @foreach (var hospitalGroup in groupedByHospital)
         {
-            <tr>
-                <td>@incident.qarid</td>
-                <td>@incident.incidentdate?.ToString("yyyy-MM-dd")</td>
-                <td>@incident.investigation</td>
-                <td>@incident.hospitalid</td>
-                <td>@incident.status</td>
-                <td>@incident.affectedward</td>
-                <td>
-                    <a class="btn btn-success" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid, inserthospitalid = incident.hospitalid })">Edit</a>
-                </td>
+            <tr class="table-primary">
+                <td colspan="7"><strong>@hospitalGroup.Key</strong></td> <!-- Hospital name or ID -->
             </tr>
+
+            @foreach (var incident in hospitalGroup)
+            {
+                <tr>
+                    <td>@incident.qarid</td>
+                    <td>@incident.incidentdate?.ToString("yyyy-MM-dd")</td>
+                    <td>@incident.investigation</td>
+                    <td>@incident.hospitalid</td>
+                    <td>@incident.status</td>
+                    <td>@incident.affectedward</td>
+                    <td>
+                        <a class="btn btn-success" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid, inserthospitalid = incident.hospitalid })">Edit</a>
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>

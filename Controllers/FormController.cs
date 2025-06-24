@@ -949,6 +949,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         [HttpGet]
         public async Task<IActionResult> EditIncident(string? id, string? inserthospitalid)
         {
+
             if (string.IsNullOrEmpty(id))
                 return NotFound();
 
@@ -1433,7 +1434,7 @@ public async Task<IActionResult> ViewAllIncidents()
         sql = @"SELECT * FROM tblincident 
                 WHERE active = 'Y' 
                 ORDER BY id DESC 
-                LIMIT 100";
+                LIMIT 200";
         cmd = new NpgsqlCommand(sql, conn);
     }
     else

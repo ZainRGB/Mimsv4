@@ -1,8 +1,16 @@
 ﻿@model List<Mimsv2.Models.WardModel>
+
 @{
     ViewData["Title"] = "Mims Wards Page";
 }
-<h3>Wards</h3>
+
+
+@{
+    var accessLevel = Context.Session.GetString("accessLevel");
+}
+
+<h3>Wards Access: @accessLevel</h3>
+
 
 
 @foreach (var group in Model.GroupBy(u => new { u.hospitalid, u.hospitalname }))
@@ -22,10 +30,10 @@
         
 
             <tr>
-                <th style="width:250px">Hospital</th>
+                @* <th style="width:250px">Hospital</th> *@
                 <th style="width:250px">Ward</th>
                 <th style="width:100px">Edit</th>
-                @* <th style="width:100px">Delete</th> *@
+                <th style="width:100px">Delete</th>
                 <th></th>
             </tr>
         </thead>
@@ -33,14 +41,18 @@
             @foreach (var ward in group)
             {
                 <tr>
-                    <td>@ward.hospitalname</td>
+                    @* <td>@ward.hospitalname</td> *@
                     <td>@ward.department</td>
                     <td>
                         <a asp-controller="Ward" asp-action="EditWard" asp-route-id="@ward.id" class="btn btn-sm btn-primary">Edit</a>
                     </td>
-@*                      <td>
-                        <a asp-controller="Ward" asp-action="DeleteWard" asp-route-id="@ward.id" class="btn btn-sm btn-danger">Delete</a>
-                    </td>  *@
+                     <td>
+
+                        <form asp-action="DeleteWard" method="post" onsubmit="return confirm('Are you sure you want to delete this Ward?');">
+                            <input type="hidden" name="id" value="@ward.id" />
+                            <button type="submit" class="btn btn-danger btn-sm" >Delete</button>
+                        </form>
+                    </td>  
                     <td></td>
                 </tr>
             }

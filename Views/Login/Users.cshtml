@@ -3,7 +3,11 @@
     ViewData["Title"] = "All Users";
 }
 
-<h2 class="mb-4">All Users</h2>
+@{
+    var accessLevel = Context.Session.GetString("accessLevel");
+}
+
+<h3>Users Access: @accessLevel</h3>
 
 
 
@@ -20,8 +24,11 @@
                 <th style="width:100px">Email</th>
                 <th>Department</th>
                 <th>Title</th>
+                @if (accessLevel == "admin"){
                 <th>Access Level</th>
+				}
                 <th>Edit</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -33,13 +40,20 @@
                     <td>@user.email</td>
                     <td>@user.department</td>
                     <td>@user.titles</td>
-                    <td>@user.rm</td>
+                    @if (accessLevel == "admin"){
+					<td>@user.rm</td>
+                    }
                     <td>
                         <a asp-action="EditUser" asp-route-id="@user.id" class="btn btn-sm btn-primary">Edit</a>
                     </td>
-@*                     <td>
-                        <a asp-action="Delete" asp-route-id="@user.id" class="btn btn-sm btn-danger">Delete</a>
-                    </td> *@
+                 <td>
+                      
+                        <form asp-action="DeleteUser" method="post" onsubmit="return confirm('Are you sure you want to delete this User?');">
+                            <input type="hidden" name="id" value="@user.id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    
+                    </td> 
                 </tr>
             }
         </tbody>

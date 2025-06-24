@@ -4,19 +4,36 @@
     ViewData["Title"] = "Edit Ward";
 }
 
+@{
+    var accessLevel = Context.Session.GetString("accessLevel");
+}
+
+<h3>Wards Access: @accessLevel</h3>
+
 <h2>Edit Ward</h2>
 
 <form asp-action="EditWard" method="post">
     <input type="hidden" asp-for="id" />
     <input type="hidden" asp-for="description" />
 
-    <div class="form-group">
-        <label asp-for="hospitalid">Select Hospital</label>
-        <select asp-for="hospitalid" class="form-control" asp-items="Model.Hospitals">
-            <option value="">-- Please select a hospital --</option>
-        </select>
-        <span asp-validation-for="hospitalid" class="text-danger"></span>
-    </div>
+
+    @if (accessLevel == "admin")
+    {
+        <div class="form-group">
+            <label asp-for="hospitalid">Select Hospital</label>
+            <select asp-for="hospitalid" class="form-control" asp-items="Model.Hospitals">
+                <option value="">-- Please select a hospital --</option>
+            </select>
+            <span asp-validation-for="hospitalid" class="text-danger"></span>
+        </div>
+    }
+    else
+    {
+        <input type="text" asp-for="@Model.Hospitals" disabled />
+        <input type="hidden" asp-for="hospitalid" />
+    }
+
+
     <br />
     <div class="form-group">
         <label asp-for="department">Ward Name</label>

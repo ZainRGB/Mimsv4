@@ -8,3 +8,35 @@ Login name will be used to log in from now onwards,
 new registers will use bcrypt.
 UPDATE tblusers
 SET loginname = COALESCE(username, loginname);
+
+IMPORTANT
+Check for /
+SELECT id, qarid
+FROM tblincident
+WHERE qarid LIKE '%/%';
+
+update all / with -
+UPDATE tblincident
+SET qarid = REPLACE(qarid, '/', '-')
+WHERE qarid LIKE '%/%';
+
+
+CREATE THIS 
+CREATE TABLE tblriskmanagement (
+    id SERIAL PRIMARY KEY,
+    qarid VARCHAR(50) UNIQUE NOT NULL,
+    risktitle TEXT NOT NULL,
+    rootcause TEXT,
+    nearrootcause TEXT,
+    risktype VARCHAR(100),
+    risklevel VARCHAR(50),
+    preventativeaction TEXT,
+    responsibleperson VARCHAR(100),
+    targetdate DATE,
+    status VARCHAR(50) DEFAULT 'Open',
+    dateidentified TIMESTAMP NOT NULL,
+    inserthospitalid VARCHAR(50) NOT NULL,
+    active CHAR(1) DEFAULT 'Y',
+    datecaptured DATE,
+    capturedby VARCHAR(100)
+);

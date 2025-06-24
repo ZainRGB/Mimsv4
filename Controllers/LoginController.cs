@@ -125,6 +125,21 @@ namespace Mimsv2.Controllers
             return NotFound();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await conn.OpenAsync();
+
+            string sql = "UPDATE tblusers SET active = 'N' WHERE id = @id";
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            await cmd.ExecuteNonQueryAsync();
+            return RedirectToAction("Users");
+        }
+
 
 
         [HttpPost]
@@ -275,18 +290,35 @@ namespace Mimsv2.Controllers
         {
             var users = new List<LoginModel>();
 
+            var accessLevel = HttpContext.Session.GetString("accessLevel");
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            //string sql = "SELECT id, loginname, username, surname, email, active, department, hospitalid, titles, rm FROM tblusers Where active = 'Y'  ";
+            // Base SQL
             string sql = @"
         SELECT u.id, u.loginname, u.username, u.surname, u.email, u.active,
                u.department, u.hospitalid, u.titles, u.rm, h.hospital AS hospitalname
         FROM tblusers u
         INNER JOIN tblhospitals h ON u.hospitalid = h.hospitalid
-        WHERE u.active = 'Y' AND h.hospitalid != '0'
-        ORDER BY u.hospitalid";
+        WHERE u.active = 'Y' AND h.hospitalid != '0'";
+
+            // Add hospital filter for non-admin
+            if (accessLevel != "admin")
+            {
+                sql += " AND u.hospitalid = @loginhospitalid";
+            }
+
+            sql += " ORDER BY u.hospitalid";
+
             using var cmd = new NpgsqlCommand(sql, conn);
+
+            if (accessLevel != "admin")
+            {
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? (object)DBNull.Value);
+            }
+
             using var reader = await cmd.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -309,85 +341,6 @@ namespace Mimsv2.Controllers
 
             return View(users);
         }
-
-
-
-
-
-        //public async Task<IActionResult> Users()
-        //{
-        //    var users = new List<LoginModel>();
-        //    var currentRole = HttpContext.Session.GetString("rm");
-        //    var currentHospitalId = HttpContext.Session.GetString("hospitalid");
-
-        //    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        //    await conn.OpenAsync();
-
-        //    string sql;
-
-        //    if (currentRole == "admin")
-        //    {
-        //        // 🔓 Admin: see all users
-        //        sql = @"
-        //    SELECT u.id, u.loginname, u.username, u.surname, u.email, u.active,
-        //           u.department, u.hospitalid, u.titles, u.rm, h.hospital AS hospitalname
-        //    FROM tblusers u
-        //    INNER JOIN tblhospitals h ON u.hospitalid = h.hospitalid
-        //    WHERE u.active = 'Y' AND h.hospitalid != '0'
-        //    ORDER BY u.hospitalid";
-        //    }
-        //    else
-        //    {
-        //        // 🔐 Local/Main: see users only from their hospital
-        //        sql = @"
-        //    SELECT u.id, u.loginname, u.username, u.surname, u.email, u.active,
-        //           u.department, u.hospitalid, u.titles, u.rm, h.hospital AS hospitalname
-        //    FROM tblusers u
-        //    INNER JOIN tblhospitals h ON u.hospitalid = h.hospitalid
-        //    WHERE u.active = 'Y' AND h.hospitalid = @hospitalid
-        //    ORDER BY u.hospitalid";
-        //    }
-
-        //    using var cmd = new NpgsqlCommand(sql, conn);
-
-        //    if (currentRole != "admin")
-        //        cmd.Parameters.AddWithValue("hospitalid", currentHospitalId);
-
-        //    using var reader = await cmd.ExecuteReaderAsync();
-
-        //    while (await reader.ReadAsync())
-        //    {
-        //        users.Add(new LoginModel
-        //        {
-        //            id = Convert.ToInt32(reader["id"]),
-        //            loginname = reader["loginname"].ToString(),
-        //            username = reader["username"].ToString(),
-        //            surname = reader["surname"].ToString(),
-        //            email = reader["email"].ToString(),
-        //            active = reader["active"].ToString(),
-        //            department = reader["department"].ToString(),
-        //            hospitalid = reader["hospitalid"].ToString(),
-        //            titles = reader["titles"].ToString(),
-        //            rm = reader["rm"].ToString(),
-        //            hospitalname = reader["hospitalname"].ToString()
-        //        });
-        //    }
-
-        //    return View(users);
-        //}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
