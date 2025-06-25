@@ -44,5 +44,52 @@ namespace Mimsv2.Services
 
             await smtp.SendMailAsync(message);
         }
+
+
+        //send incident email, in formcoontroller find the recipients
+        public async Task SendIncidentNotificationEmail(string toEmail, string subject, string body, List<string>? cc = null, List<string>? bcc = null)
+        {
+            var fromAddress = new MailAddress(_settings.FromEmail, _settings.FromName);
+            var toAddress = new MailAddress(toEmail);
+
+            var smtp = new SmtpClient
+            {
+                Host = _settings.Host,
+                Port = _settings.Port,
+                EnableSsl = _settings.EnableSsl,
+                Credentials = new NetworkCredential(_settings.Username, _settings.Password)
+            };
+
+            using var message = new MailMessage
+            {
+                From = fromAddress,
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
+
+            message.To.Add(toAddress);
+
+            if (cc != null)
+            {
+                foreach (var ccEmail in cc)
+                {
+                    message.CC.Add(ccEmail);
+                }
+            }
+
+            if (bcc != null)
+            {
+                foreach (var bccEmail in bcc)
+                {
+                    message.Bcc.Add(bccEmail);
+                }
+            }
+
+            await smtp.SendMailAsync(message);
+        }
+
+
+
     }
 }

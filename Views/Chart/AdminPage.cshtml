@@ -1,0 +1,333 @@
+﻿@model Mimsv2.Models.ChartModel
+
+@{
+    ViewData["Title"] = "Mims Admin Page";
+}
+
+<section class="dash_container">
+
+    <div class="dash_item_span3">
+            <h3>@Model.HospitalName</h3>
+    </div>
+
+    <div class="dash_item_span3">
+        <form method="get" asp-controller="Chart" asp-action="AdminPage" id="hospitalForm">
+            <div class="form-group mb-3">
+                <label>Select Hospital:</label>
+                <select asp-for="inserthospitalid" asp-items="Model.Hospitals" class="form-control" onchange="document.getElementById('hospitalForm').submit();">
+                    <option value="">All Hospitals</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Open Incidents</span>
+            <span class="inner_items open">@Model.Open</span>
+            </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">On Hold Incidents</span>
+            <span class="inner_items hold">@Model.OnHold</span>
+            </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Closed Incidents</span>
+            <span class="inner_items closed">@Model.Closed</span>
+        </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Open More than 5 Days</span>
+            <span class="inner_items five">@Model.OpenOver5Days</span>
+        </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Open More than 10 Days</span>
+            <span class="inner_items ten">@Model.OpenOver10Days</span>
+        </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Total Incidents</span>
+            <span class="inner_items total">@Model.Total</span>
+        </div>
+    </a>
+
+
+
+
+    <div class="dash_item_span4">
+        <p class="dash_p">This chart shows the number of incidents recorded each month. Each bar represents a month's total incidents, with percentages indicating its share of the yearly total. This helps identify trends and peak periods for better incident management.</p>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <strong>Monthly Incident Trends</strong>
+            </div>
+            <script>
+                const selectedHospitalId = '@Model.inserthospitalid';
+            </script>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="150"></canvas>
+            </div>
+        </div>
+    
+    </div>
+    
+    <div class="dash_item_span2">
+
+        <p class="dash_p">This pie chart represents the distribution of incidents across different patient types (PTE) for the year 2025.</p>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <strong>Incident Distribution by PTE</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="pteChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="dash_item_span6">re</div>
+
+
+    <div class="dash_item_span6">
+        <p class="dash_p">This horizontal bar chart shows the number of incidents by type for 2025. It helps identify which types are most prevalent across the organization.</p>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <strong>Incident Types (Horizontal Bar)</strong>
+            </div>
+            <div class="card-body">
+                <canvas id="incidentTypeChart" height="250"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<!---Monthly Chart--->
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch(`/Chart/GetMonthlyData?hospitalid=${selectedHospitalId}`)
+
+      
+
+            .then(res => res.json())
+            .then(data => {
+                console.log("Chart data received:", data);
+
+                const labels = data.map(item => item.month);
+                const counts = data.map(item => item.count);
+                const total = counts.reduce((a, b) => a + b, 0);
+                const percentages = counts.map(count => ((count / total) * 100).toFixed(1) + "%");
+
+                const colors = [
+                    "red", "green", "blue", "orange", "brown", "purple",
+                    "darkblue", "darkorange", "yellow", "grey", "darkgreen", "pink"
+                ];
+
+
+               
+
+
+                const ctx = document.getElementById('monthlyChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Incident Count',
+                            data: counts,
+                            backgroundColor: colors.slice(0, counts.length)
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.raw} incidents (${percentages[context.dataIndex]})`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'start',
+                                color: 'white',
+                                font: {
+                                    size:16,
+                                    weight: 'bold'
+                                },
+                                formatter: function(value) {
+                                    return value;
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Incidents'
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            });
+    });
+</script>
+<!---Monthly Chart END--->
+
+<!---PTE Chart --->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch(`/Chart/GetPteDistribution?hospitalid=${selectedHospitalId}`)
+            .then(res => res.json())
+            .then(data => {
+                const labels = data.map(item => item.label);
+                const counts = data.map(item => item.count);
+
+                const colors = [
+                    "red", "green", "blue", "orange", "brown", "purple",
+                    "darkblue", "darkorange", "yellow", "grey", "darkgreen", "pink"
+                ];
+
+                const ctx = document.getElementById('pteChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: colors.slice(0, counts.length)
+                        }]
+                    },
+     options: {
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    generateLabels: function (chart) {
+                        const data = chart.data;
+                        return data.labels.map((label, i) => ({
+                            text: `${label}: ${data.datasets[0].data[i]}`,
+                            fillStyle: data.datasets[0].backgroundColor[i],
+                            strokeStyle: data.datasets[0].backgroundColor[i],
+                            index: i
+                        }));
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        return `${context.label}: ${context.raw}`;
+                    }
+                }
+            }
+        }
+    }
+
+                });
+            });
+    });
+</script>
+
+<!---PTE Chart END--->
+
+<!---INCIDENT Chart END--->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch(`/Chart/GetIncidentTypeDistribution?hospitalid=${selectedHospitalId}`)
+            .then(res => res.json())
+            .then(data => {
+                const labels = data.map(item => item.label);
+                const counts = data.map(item => item.count);
+
+                const colors = [
+                    "red", "green", "blue", "orange", "brown", "purple",
+                    "darkblue", "darkorange", "yellow", "grey", "darkgreen", "pink"
+                ];
+
+                const ctx = document.getElementById('incidentTypeChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Incidents',
+                            data: counts,
+                            backgroundColor: colors.slice(0, counts.length)
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // Horizontal bar chart
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return `${context.label}: ${context.raw}`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right',
+                                color: 'black',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                formatter: function (value) {
+                                    return value;
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Incidents'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Incident Type'
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching incident type data:", error);
+            });
+    });
+</script>
+
+
+<!---INCIDENT Chart END--->

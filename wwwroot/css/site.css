@@ -258,15 +258,6 @@ body.shrink .side_nav .nav-item .text {
 }
 
 
-
-
-
-
-
-
-
-
-
 .nav_toggle {
     display: none; /* hide by default */
     position: fixed;
@@ -537,4 +528,117 @@ label {
     padding-left: 3px;
     width:20px;
     height:20px;
+}
+
+
+.dash_container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+}
+
+.dash_item {
+    box-shadow: 0 3px 10px -3px rgba(70, 46, 118, 0.3);
+    border-radius: 6px;
+    border: 1px solid lightgrey;
+    position: relative;
+    align-content: center;
+    background-color: white;
+    padding: 10px;
+}
+
+.dash_item_span2 {
+    grid-column: span 2;
+    box-shadow: 0 3px 10px -3px rgba(70, 46, 118, 0.3);
+    border-radius: 6px;
+    border: 1px solid lightgrey;
+    position: relative;
+    align-content: center;
+    background-color: white;
+    padding: 10px;
+}
+
+.dash_item_span3 {
+    grid-column: span 3;
+    border-radius: 6px;
+    border: 1px solid lightgrey;
+    position: relative;
+    align-content: center;
+    background-color: white;
+    padding:10px;
+}
+.dash_item_span4 {
+    grid-column: span 4;
+    box-shadow: 0 3px 10px -3px rgba(70, 46, 118, 0.3);
+    border-radius: 6px;
+    border: 1px solid lightgrey;
+    position: relative;
+    align-content: center;
+    background-color: white;
+    padding: 10px;
+}
+
+.dash_item_span6 {
+    grid-column: span 6;
+    box-shadow: 0 3px 10px -3px rgba(70, 46, 118, 0.3);
+    border-radius: 6px;
+    border: 1px solid lightgrey;
+    position: relative;
+    align-content: center;
+    background-color: white;
+    padding: 10px;
+}
+
+.inner_items{
+   display:flex;
+   justify-content:center;
+   align-items:center;
+    font-size:3rem;
+    font-weight:600;
+}
+.dash_anchor{
+    text-decoration:none;
+    display:inline-block;
+    border:none;
+    outline:none;
+    transition:500ms;
+}
+    .dash_anchor:hover {
+        scale: 1.03;
+        box-shadow: 0 3px 10px -3px limegreen;
+    }
+    .inner_items.open {
+        color: dodgerblue;
+    }
+
+.inner_items.hold {
+    color: darkorange;
+}
+
+
+.inner_items.closed {
+    color: forestgreen;
+}
+
+    .inner_items.total{
+        color: red;
+    }
+
+    .inner_items.five{
+        color: darkgoldenrod;
+    }
+
+    .inner_items.ten{
+        color: rebeccapurple;
+    }
+.inner_text {
+position:absolute;
+left:2px;
+top:2px;
+color:grey;
+}
+
+.dash_p{
+    color:grey;
+    font-size:1rem;
 }
