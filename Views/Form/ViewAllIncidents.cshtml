@@ -1,5 +1,6 @@
 ﻿@model List<FormModel>
 
+@using System.Security.Claims
 @{
     ViewData["Title"] = "All Incidents";
 }
@@ -10,9 +11,16 @@
 @{
     var accessLevel = Context.Session.GetString("accessLevel");
 }
-
+<div class="status-summary">
+    <strong>Status Totals:</strong><br />
+    🟢 <b>Open:</b> @ViewBag.OpenCount <br />
+    🔴 <b>Closed:</b> @ViewBag.ClosedCount <br />
+    ⏸ <b>On Hold:</b> @ViewBag.HoldCount
+</div>
 
 <table class="view_tbl">
+    @if (accessLevel == "admin")
+    {
     <tr>
         <td colspan="5"><h3> All Incidents</h3></td>
         <td colspan="6">
@@ -24,7 +32,7 @@
                 </form>
         </td>
     </tr>
-
+	}
 
         @{
             // Group incidents by hospital name

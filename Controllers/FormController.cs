@@ -33,7 +33,6 @@ namespace Mimsv2.Controllers
             model.CapturedByEmail = HttpContext.Session.GetString("email") ?? "Unknown";
             model.CapturedbyDpt = HttpContext.Session.GetString("department") ?? "Unknown";
             model.HospitalId = HttpContext.Session.GetString("loginhospitalid") ?? "0";
-
             model.AccessLevel = HttpContext.Session.GetString("accessLevel") ?? "User";
 
             if (model.AccessLevel == "admin")
@@ -1696,19 +1695,81 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
         //    return View("ViewAllIncidents", incidents);
         //}
+
+
         [HttpGet]
-        public async Task<IActionResult> ViewAllIncidents(string? selectedHospitalId)
+        public async Task<IActionResult> ViewAllIncidents(string? selectedHospitalId, string? status)
         {
             var incidents = new List<FormModel>();
             var hospitalList = new List<SelectListItem>();
 
             var accessLevel = HttpContext.Session.GetString("accessLevel");
             var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+            var loginname = HttpContext.Session.GetString("loginname"); //  grab login name
 
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            // Admin gets dropdown list
+
+
+            //count incidents
+            ViewBag.OpenCount = 0;
+            ViewBag.ClosedCount = 0;
+            ViewBag.HoldCount = 0;
+
+            // Build count SQL
+            string countSql = @"
+    SELECT status, COUNT(*) AS count 
+    FROM tblincident 
+    WHERE active = 'Y'";
+
+            var countCmd = new NpgsqlCommand();
+            countCmd.Connection = conn;
+
+            if (accessLevel == "admin")
+            {
+                if (!string.IsNullOrEmpty(selectedHospitalId))
+                {
+                    countSql += " AND hospitalid = @selectedHospitalId";
+                    countCmd.Parameters.AddWithValue("selectedHospitalId", selectedHospitalId);
+                }
+            }
+            else
+            {
+                countSql += " AND hospitalid = @hospitalid AND username = @username";
+                countCmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+                countCmd.Parameters.AddWithValue("username", loginname);
+            }
+
+            countSql += " GROUP BY status";
+            countCmd.CommandText = countSql;
+
+            using (var countReader = await countCmd.ExecuteReaderAsync())
+            {
+                while (await countReader.ReadAsync())
+                {
+                    string stat = countReader["status"]?.ToString()?.ToLower() ?? "";
+                    int cnt = Convert.ToInt32(countReader["count"]);
+
+                    if (stat == "open") ViewBag.OpenCount = cnt;
+                    else if (stat == "closed") ViewBag.ClosedCount = cnt;
+                    else if (stat == "hold") ViewBag.HoldCount = cnt;
+                }
+            }
+
+            //count incidents
+
+
+
+
+
+
+
+
+
+
+
+            // Admin gets hospital dropdown list
             if (accessLevel == "admin")
             {
                 using (var hospitalCmd = new NpgsqlCommand("SELECT hospitalid, hospital FROM tblhospitals WHERE active = 'Y' ORDER BY hospitalid", conn))
@@ -1727,8 +1788,13 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                 }
             }
 
-            // Prepare incidents query
-            string sql;
+            // Build SQL
+            string sql = @"
+        SELECT i.*, h.hospital AS hospitalname 
+        FROM tblincident i 
+        INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
+        WHERE i.active = 'Y'";
+
             var cmd = new NpgsqlCommand();
             cmd.Connection = conn;
 
@@ -1736,35 +1802,27 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             {
                 if (!string.IsNullOrEmpty(selectedHospitalId))
                 {
-                    sql = @"SELECT i.*, h.hospital as hospitalname 
-                    FROM tblincident i 
-                    INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
-                    WHERE i.active = 'Y' AND i.hospitalid = @selectedHospitalId
-                    ORDER BY i.id DESC LIMIT 200";
-                    cmd.CommandText = sql;
+                    sql += " AND i.hospitalid = @selectedHospitalId";
                     cmd.Parameters.AddWithValue("selectedHospitalId", selectedHospitalId);
-                }
-                else
-                {
-                    sql = @"SELECT i.*, h.hospital as hospitalname 
-                    FROM tblincident i 
-                    INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
-                    WHERE i.active = 'Y'
-                    ORDER BY i.id DESC LIMIT 200";
-                    cmd.CommandText = sql;
                 }
             }
             else
             {
-                sql = @"SELECT i.*, h.hospital as hospitalname 
-                FROM tblincident i 
-                INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
-                WHERE i.active = 'Y' AND i.hospitalid = @hospitalid
-                ORDER BY i.id DESC LIMIT 200";
-                cmd.CommandText = sql;
+                sql += " AND i.hospitalid = @hospitalid AND i.username = @username";
                 cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+                cmd.Parameters.AddWithValue("username", loginname);
             }
 
+            if (!string.IsNullOrEmpty(status) && status != "all")
+            {
+                sql += " AND i.status = @status";
+                cmd.Parameters.AddWithValue("status", status);
+            }
+
+            sql += " ORDER BY i.id DESC LIMIT 200";
+            cmd.CommandText = sql;
+
+            // Execute and read results
             using (var reader = await cmd.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
@@ -1786,9 +1844,11 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
             ViewBag.HospitalList = hospitalList;
             ViewBag.SelectedHospitalId = selectedHospitalId;
-
+            ViewBag.SelectedStatus = status;
+           
             return View("ViewAllIncidents", incidents);
         }
+
 
 
 

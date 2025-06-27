@@ -23,20 +23,12 @@ namespace Mimsv2.Models
         public int id { get; set; }
         public string affectedward { get; set; }
 
-        //public string incidentarea { get; set; }
-        //public bool IsDayShift { get; set; }
-        //public string incidentarea
-        //{
-        //    get => IsDayShift ? "Day Shift" : null;
-        //}
-
         public string incidentarea { get; set; }
         public bool IsDayShift
         {
             get => incidentarea == "Day Shift";
             set => incidentarea = value ? "Day Shift" : null;
         }
-
 
         public string incidentcriteria { get; set; }
         public string incidentcriteriasub { get; set; }
@@ -50,7 +42,7 @@ namespace Mimsv2.Models
         public string assignedstaff { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime? incidentdate { get; set; } //datefield
+        public DateTime? incidentdate { get; set; } 
         public string incidenttime { get; set; }
 
         [DataType(DataType.Date)]

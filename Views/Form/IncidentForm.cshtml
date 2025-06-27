@@ -4,7 +4,7 @@
 }
 
 
-@if (Model.AccessLevel == "admin")
+@* @if (Model.AccessLevel == "admin")
 {
     <div class="alert alert-success">Welcome Admin! Full access granted.</div>
 
@@ -13,7 +13,7 @@ else
 {
     <p class="text-muted">Standard access - admin sections are hidden.</p>
  
-}
+} *@
 
 @{
     var loginHospitalId = Context.Session.GetString("loginhospitalid");
@@ -21,8 +21,9 @@ else
 
 
 <h3>New Incident Form</h3>
-Incident Created, Captured and Reported by @Context.Session.GetString("username") @Context.Session.GetString("surname") (@Context.Session.GetString("titles"))
-<br />
+<p>
+Incident Created, Captured and Reported by <b>@Context.Session.GetString("username") @Context.Session.GetString("surname")</b> <i>(@Context.Session.GetString("titles"))</i>
+</p>
 
 
 

@@ -163,15 +163,14 @@ body {
     display: flex; /* This is the critical line! */
     height: 100vh; /* Make the container take the full viewport height */
     width: 100vw; /* Make the container take the full viewport width */
-    
 }
 
 
 /* --- Side Navigation Styles --- */
+
+
 .side_nav {
-    position: sticky;
-    top: 0;
-    left: 0;
+
    /* height: 100vh;*/
     background-color: whitesmoke;
     width: 12rem;
@@ -197,29 +196,12 @@ body.shrink .side_nav .nav-item .text {
     transition: width 0.5s ease-in-out;
 }
 
-
     /* Icon only styles when collapsed */
     .side_nav.collapsed {
         width: 50px;
         transition:500ms;
     }
 
-/*.icon {
-    font-size: 1.6rem;
-    display: inline;
-    letter-spacing: 0.75rem;
-}*/
-
-/*.icon {
-    font-size: 1.6rem;
-    display: inline-block;*/ /* Changed from 'inline' to 'inline-block' for better spacing control */
-    /*letter-spacing: 0.75rem;
-    cursor: pointer;*/ /* Indicates it's interactive */
-    /*color: #4a5568;*/ /* A darker gray for the icon */
-    /*padding: 0.25rem;*/ /* Add a little padding for easier hovering */
-    /*border-radius: 0.25rem;*/ /* Slightly rounded corners */
-    /*transition: color 0.5s ease;*/ /* Smooth transition for color change on hover */
-/*}*/
 .icon {
     font-size: 1.6rem;
     display: inline-block;
@@ -230,57 +212,60 @@ body.shrink .side_nav .nav-item .text {
     letter-spacing: 0.3rem
 }
 
-.clr1 {color: #1d4ed8;}
+.clr1 {color:dodgerblue;}
 
-.clr2 {color: #16a34a;}
+.clr2 {color: limegreen;}
 
-.clr3 {color: #dc2626;}
+.clr3 {color: orangered;}
 
-.clr4 {color: goldenrod;}
+.clr4 {color: green;}
 
-.clr5 {color: #9333ea;}
+.clr5 {color: orange;}
 
-.clr6 {color: darkcyan;}
+.clr6 {color: black;}
 
 .clr7 {color: rebeccapurple;}
 
 .clr8 {color: peachpuff;}
 
+.clr9 {color: peachpuff;}
+
+.clr10 {color: peachpuff;}
+
 .icon:hover {
     color: limegreen;
 }
 
-
-
 .tooltip-container {
     position: relative;
     display: inline-block;
+    transition: 1s;
 }
 
 .tooltip-text {
-    /*visibility: hidden;*/ /* Hidden by default */
     display: none;
-    opacity: 0; /* Start with 0 opacity for fade-in effect */
+    opacity: 0;
     color: grey;
     text-align: left;
     position: absolute;
     z-index: 10;
-    bottom: 6px; /* Position above the element */
+    bottom: 6px;
     left: 98px;
-    transform: translateX(-50%); /* Center the tooltip horizontally */
-    white-space: nowrap; /* Prevent text wrapping */
-    transition: opacity 0.5s ease, visibility 0.3s ease; /* Smooth transition */
+    transform: translateX(-50%);
+    white-space: nowrap;
+    transition: opacity 0.5s ease, visibility 0.3s ease;
     border-radius: 3px;
-    min-width:100px;
+    min-width: 100px;
+    padding: 10px 0;
+   
 }
-
 
 .tooltip-container:hover .tooltip-text {
     /*visibility: visible;*/ /* Show on hover */
     display: block;
     opacity: 1; /* Fade in on hover */
     background-color: whitesmoke;
-   
+    
 }
 
 
@@ -338,8 +323,9 @@ main {
     padding: 1.5rem;
     box-sizing: border-box;
     position: relative;
-    height: 100vh; /* or any specific height you want */
-    max-height: 100vh; /* prevents exceeding viewport height */
+    height: 100vh; 
+    max-height: 100vh; 
+
 }
 
 

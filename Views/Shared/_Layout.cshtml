@@ -26,11 +26,6 @@
         <div class="spinner"></div>
     </div>
 
-
-
-
-
-
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 sticky-top" >
             <div class="container-fluid">
@@ -270,7 +265,7 @@
                     <div class="nav-item">
                         <a asp-controller="Form" asp-action="IncidentForm">
                             <div class="tooltip-container group">
-                                <div class="icon clr2"><i class="bi bi-file-text"></i></div>
+                                <div class="icon clr2"><i class="bi bi-clipboard-plus"></i></div>
                                 <span class="tooltip-text clr2">
                                     New Incident
                                 </span>
@@ -281,9 +276,60 @@
 
 
                     <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents">
+                            <div class="tooltip-container group">
+                                <div class="icon clr3"><i class="bi bi-eye"></i></div>
+                                <span class="tooltip-text clr5">
+                                    Incidents
+                                </span>
+                            </div>
+                            <span class="text">Incidents</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="open">
+                            <div class="tooltip-container group">
+                                <div class="icon clr4"><i class="bi bi-bag-check"></i></div>
+                                <span class="tooltip-text clr2">
+                                    Open
+                                </span>
+                            </div>
+                            <span class="text">Open</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="hold">
+                            <div class="tooltip-container group">
+                                <div class="icon clr5"><i class="bi bi-bag"></i></div>
+                                <span class="tooltip-text clr2">
+                                    On Hold
+                                </span>
+                            </div>
+                            <span class="text">On Hold</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="closed">
+                            <div class="tooltip-container group">
+                                <div class="icon clr6"><i class="bi bi-bag-dash"></i></div>
+                                <span class="tooltip-text clr2">
+                                    Closed
+                                </span>
+                            </div>
+                            <span class="text">Closed</span>
+                        </a>
+
+
+
+
+
+
+                    </div>
+
+                    <div class="nav-item">
                         <a asp-controller="Risk" asp-action="Index">
                             <div class="tooltip-container group">
-                                <div class="icon clr3"><i class="bi bi-exclamation-diamond"></i></div>
+                                <div class="icon clr7"><i class="bi bi-exclamation-diamond"></i></div>
                                 <span class="tooltip-text clr3">
                                     Risk Assess
                                 </span>
@@ -293,33 +339,11 @@
                     </div>
 
 
-                    <div class="nav-item">
-                        <a asp-controller="Ward" asp-action="Index">
-                            <div class="tooltip-container group">
-                                <div class="icon clr4"><i class="bi bi-boxes"></i></div>
-                                <span class="tooltip-text clr4">
-                                    Wards
-                                </span>
-                            </div>
-                            <span class="text">Wards</span>
-                        </a>
-                    </div>
 
 
                 }
               
 
-                <div class="nav-item">
-                    <a asp-controller="Form" asp-action="ViewAllIncidents">
-                        <div class="tooltip-container group">
-                            <div class="icon clr5"><i class="bi bi-files"></i></div>
-                            <span class="tooltip-text clr5">
-                                Incidents
-                            </span>
-                        </div>
-                        <span class="text">Incidents</span>
-                    </a>
-                </div>
 
                 <div class="nav-item">
                     <a asp-controller="Login" asp-action="Users">
@@ -337,7 +361,7 @@
             </div>
             <button class="nav_toggle" id="navToggle">&#9776;</button>
 
-            <main class="flex-grow-1" style="overflow-y: visible;background-color:white;min-height:auto;">
+            <main class="flex-grow-1" style="overflow-y: visible;background-color:white;min-height:300vh;">
                 @RenderBody()
 
             </main>
@@ -350,7 +374,7 @@
 
         <div id="logoutWarningModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
             <div style="background:#fff; padding:30px; border-radius:10px; max-width:400px; width:90%; text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.3);">
-                <h3>⚠️ Inactivity Warning</h3>
+                <h3>⚠ Inactivity Warning</h3>
                 <p>You’ll be logged out in <span id="countdown">60</span> seconds due to inactivity.</p>
                 <button onclick="stayLoggedIn()" style="margin-top:20px; padding:10px 20px; background:#007bff; color:white; border:none; border-radius:5px;">Stay Logged In</button>
             </div>
@@ -418,7 +442,7 @@
     }
     else
     {
-        <main class="flex-grow-1" style="overflow-y: visible;">
+        <main class="flex-grow-1" style="overflow-y: visible;background-color:white;min-height:300vh;">
 
             @RenderBody()
 
