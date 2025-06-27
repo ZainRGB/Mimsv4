@@ -1,0 +1,348 @@
+﻿@model List<HospitalAdmissionModel>
+@using System.Text.Json
+
+<h2>Current Admissions Per Hospital</h2>
+@{
+    int currentYear = DateTime.Now.Year;
+    var years = new List<string> { "All" };
+    for (int y = currentYear; y >= currentYear - 2; y--)
+    {
+        years.Add(y.ToString());
+    }
+
+    int? selectedYear = ViewBag.SelectedYear as int?;
+}
+
+<div class="btn-group mb-3">
+    @for (int i = 0; i < years.Count; i++)
+    {
+        var yrVal = i == 0 ? (int?)null : int.Parse(years[i]);
+        var isActive = (yrVal == selectedYear || (i == 0 && selectedYear == null)) ? "btn-primary" : "btn-outline-primary";
+        var href = yrVal == null
+        ? Url.Action("Index", "Cm", new { month = ViewBag.SelectedMonth })
+        : Url.Action("Index", "Cm", new { month = ViewBag.SelectedMonth, year = yrVal });
+
+        <a href="@href" class="btn @isActive">@years[i]</a>
+    }
+</div>
+
+
+
+@{
+    var months = new[] { "All", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    int? selectedMonth = ViewBag.SelectedMonth as int?;
+}
+
+<div class="btn-group mb-3">
+    @for (int i = 0; i < months.Length; i++)
+    {
+        var isActive = (i == selectedMonth || (i == 0 && selectedMonth == null)) ? "btn-primary" : "btn-outline-primary";
+        var href = i == 0 ? Url.Action("Index", "Cm") : Url.Action("Index", "Cm", new { month = i });
+        <a href="@href" class="btn @isActive">@months[i]</a>
+    }
+</div>
+
+
+
+
+<section class="dash_container">
+    <div class="dash_item_span6">Hospital Adimssions</div>
+
+
+
+</section>
+
+
+
+
+
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Hospital</th>
+            <th>Number of Patients</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var count in ViewBag.PatientCounts as List<HospitalCountModel>)
+        {
+            <tr>
+                <td>@count.HospitalName</td>
+                <td>@count.PatientCount</td>
+            </tr>
+        }
+    </tbody>
+
+
+
+</table>
+
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Hospital</th>
+            <th>Admissions</th>
+            <th>Patient Incidents</th>
+            <th>Incident Rate (per 1000)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in ViewBag.PatientCounts as List<HospitalCountModel>)
+        {
+            <tr>
+                <td>@row.HospitalName</td>
+                <td>@row.PatientCount</td>
+                <td>@row.IncidentCount</td>
+                <td>@Math.Round(row.IncidentRate, 2)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3 class="mt-4">Hospital Admissions, Incidents & Rate</h3>
+<canvas id="hospitalChart" height="500"></canvas>
+
+
+
+@{
+    ViewData["Title"] = "Nurse Trend Chart";
+    var trends = ViewBag.IncidentTrends as List<Mimsv2.Models.IncidentTrendModel>;
+}
+
+
+
+<h2>Group Trends</h2>
+<canvas id="nurseTrendChart" height="400"></canvas>
+
+
+
+
+
+@if (ViewBag.IncidentTrends != null)
+{
+    var trends2 = (List<Mimsv2.Models.IncidentTrendModel>)ViewBag.IncidentTrends;
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Medication Related</th>
+                <th>Pressure Injuries</th>
+                <th>Slip & Falls</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var trend in trends2)
+            {
+                <tr>
+                    <td>@trend.Month</td>
+                    <td>@trend.MedicationRelated</td>
+                    <td>@trend.PressureInjuries</td>
+                    <td>@trend.SlipFalls</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No incident trends found.</p>
+}
+
+
+
+
+
+
+
+
+<script>
+    const data = @Html.Raw(Json.Serialize(ViewBag.PatientCounts));
+
+    const labels = data.map(d => d.hospitalName);
+    const admissions = data.map(d => d.patientCount);
+    const incidents = data.map(d => d.incidentCount);
+    const rates = data.map(d => (d.incidentRate != null ? Math.round(d.incidentRate) : 0));
+        const backgroundColors = [
+        'rgba(54, 162, 235, 0.7)',
+        'rgba(255, 99, 132, 0.7)',
+        'rgba(255, 206, 86, 0.7)',
+        'rgba(75, 192, 192, 0.7)',
+        'rgba(153, 102, 255, 0.7)',
+        'rgba(255, 159, 64, 0.7)'
+    ];
+
+    const ctx = document.getElementById('hospitalChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Admissions',
+                    data: admissions,
+                                       backgroundColor: backgroundColors,
+                    datalabels: {
+                        color: 'white',
+                        anchor: 'end',
+                        align: 'start',
+                        formatter: value => value
+                    }
+
+                },
+                {
+                    label: 'Incidents',
+                    data: incidents,
+                    backgroundColor: backgroundColors.map(c => c.replace('0.7', '1')), // darker variant
+                    datalabels: {
+                        color: 'white',
+                        anchor: 'center',
+                        align: 'center',
+                        formatter: value => value
+                    }
+                },
+                {
+    label: 'Incident Rate (per 1000)',
+    data: rates,
+    type: 'line',
+    yAxisID: 'y2',
+    borderColor: 'grey',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderWidth: 3,
+    pointBackgroundColor: 'white',
+    pointRadius: 5,
+    datalabels: {
+        color: 'grey',
+        anchor: 'end',
+        align: 'top',
+        font: { weight: 'bold' },
+        formatter: value => value + '‰'
+    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                datalabels: {
+                    display: true
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            if (ctx.dataset.label === 'Incident Rate (per 1000)') {
+                                return ctx.dataset.label + ': ' + ctx.raw + '‰';
+                            }
+                            return ctx.dataset.label + ': ' + ctx.raw;
+                        }
+                    }
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+
+
+
+                scales: {
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: 'Admissions'
+            }
+        },
+        y1: {
+            beginAtZero: true,
+            position: 'right',
+            title: {
+                display: true,
+                text: 'Incidents'
+            },
+            grid: {
+                drawOnChartArea: false
+            }
+        },
+        y2: {
+            beginAtZero: true,
+            position: 'right',
+            title: {
+                display: true,
+                text: 'Incident Rate (%)'
+            },
+            grid: {
+                drawOnChartArea: false
+            }
+        }
+    }
+
+        },
+        plugins: [ChartDataLabels]
+    });
+</script>
+
+
+
+
+
+<script>
+    const nurseData = @Html.Raw(JsonSerializer.Serialize(ViewBag.IncidentTrends ?? new List<Mimsv2.Models.IncidentTrendModel>()));
+
+    if (Array.isArray(nurseData) && nurseData.length > 0) {
+        const labels = nurseData.map(x => x.month);
+        const medication = nurseData.map(x => x.medicationRelated);
+        const pressure = nurseData.map(x => x.pressureInjuries);
+        const falls = nurseData.map(x => x.slipFalls);
+
+        new Chart(document.getElementById('nurseTrendChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Medication Related',
+                        data: medication,
+                        backgroundColor: '#2f75b5'
+                    },
+                    {
+                        label: 'Pressure Injuries',
+                        data: pressure,
+                        backgroundColor: '#ed7d31'
+                    },
+                    {
+                        label: 'Slip & Falls',
+                        data: falls,
+                        backgroundColor: '#70ad47'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Incidents'
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        console.warn("No trend data available for nurse chart.");
+    }
+</script>

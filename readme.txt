@@ -40,3 +40,14 @@ CREATE TABLE tblriskmanagement (
     datecaptured DATE,
     capturedby VARCHAR(100)
 );
+
+
+CREATE TABLE tblincidentlog (
+    id SERIAL PRIMARY KEY,
+    qarid VARCHAR,
+    hospitalid VARCHAR,
+    actiontype VARCHAR,          -- e.g., 'Deleted', 'PutOnHold', 'AutoExpireWarning'
+    actionby VARCHAR,            -- user or staff name
+    actiondate TIMESTAMP,        -- when the action happened
+    notes TEXT                   -- optional notes like countdown days left
+);

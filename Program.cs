@@ -6,6 +6,7 @@ using Mimsv2.Models;
 using Mimsv2.Services;
 using Npgsql;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews()
@@ -45,6 +46,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -56,26 +58,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-
-
 app.UseSession();          // Must be before auth middleware
 
 app.UseRouting();
 
 app.UseAuthentication();
 
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-//pattern: "{controller=Login}/{action=Logout}/{id?}");
-// pattern: "{controller=Login}/{action=Index}/{id?}");
- //pattern: "{controller=Home}/{action=Index}/{id?}");
-//app.MapControllerRoute(
-//    name: "default",
-//    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

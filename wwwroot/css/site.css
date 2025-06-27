@@ -133,6 +133,32 @@ body {
         background-color: whitesmoke;
     }
 
+
+
+.view_tbl {
+    width: 100%;
+    font-size: 0.96rem;
+    border-collapse: collapse;
+}
+
+    .view_tbl th {
+        background-color: grey;
+        padding: 6px;
+        color:white;
+    }
+
+    .view_tbl td {
+        padding: 2px;
+    }
+
+    .view_tbl tr:nth-child(odd) {
+        background-color: white;
+    }
+
+    .view_tbl tr:nth-child(even) {
+        background-color: ghostwhite;
+    }
+
 .app-container {
     display: flex; /* This is the critical line! */
     height: 100vh; /* Make the container take the full viewport height */

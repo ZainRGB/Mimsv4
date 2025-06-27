@@ -142,4 +142,5 @@ namespace Mimsv2.Models
         public string HospitalAbbr { get; set; }
      
     }
+
 }

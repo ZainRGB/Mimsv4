@@ -1275,6 +1275,51 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
+
+
+            // 2. Log the closure or hold
+            if (model.status == "closed" || model.status == "hold")
+            {
+                string actionType = model.status == "closed" ? "closed" : "hold";
+                string notes = $"Status set to {actionType}";
+
+                // Prevent duplicate log entries (optional, in case user reloads)
+                var checkLogCmd = new NpgsqlCommand(@"
+        SELECT COUNT(*) FROM tblincidentlog 
+        WHERE qarid = @qarid AND actiontype = @actiontype", conn);
+                checkLogCmd.Parameters.AddWithValue("qarid", model.qarid);
+                checkLogCmd.Parameters.AddWithValue("actiontype", actionType);
+                var count = Convert.ToInt32(await checkLogCmd.ExecuteScalarAsync());
+
+                if (count == 0)
+                {
+                    var logCmd = new NpgsqlCommand(@"
+            INSERT INTO tblincidentlog (qarid, hospitalid, actiontype, actionby, actiondate, notes)
+            VALUES (@qarid, @hospitalid, @actiontype, @user, NOW(), @notes)", conn);
+
+                    logCmd.Parameters.AddWithValue("qarid", model.qarid);
+                    logCmd.Parameters.AddWithValue("hospitalid", model.hospitalid ?? "unknown");
+                    logCmd.Parameters.AddWithValue("actiontype", actionType);
+                    logCmd.Parameters.AddWithValue("user", HttpContext.Session.GetString("username") ?? "unknown");
+                    logCmd.Parameters.AddWithValue("notes", notes);
+
+                    await logCmd.ExecuteNonQueryAsync();
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             string sql = @"UPDATE tblincident SET
     affectedward = @affectedward,
     incidentarea = @incidentarea,
@@ -1593,55 +1638,158 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         //view incidents
 
 
-[HttpGet]
-public async Task<IActionResult> ViewAllIncidents()
-{
-    var incidents = new List<FormModel>();
+        //[HttpGet]
+        //public async Task<IActionResult> ViewAllIncidents()
+        //{
+        //    var incidents = new List<FormModel>();
 
-    var accessLevel = HttpContext.Session.GetString("accessLevel");
-    var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+        //    var accessLevel = HttpContext.Session.GetString("accessLevel");
+        //    var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
 
-    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-    await conn.OpenAsync();
+        //    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //    await conn.OpenAsync();
 
-    string sql;
-    var cmd = new NpgsqlCommand();
+        //    string sql;
+        //    var cmd = new NpgsqlCommand();
 
-    if (accessLevel == "admin")
-    {
-        sql = @"SELECT * FROM tblincident 
-                WHERE active = 'Y' 
-                ORDER BY id DESC 
-                LIMIT 200";
-        cmd = new NpgsqlCommand(sql, conn);
-    }
-    else
-    {
-        sql = @"SELECT * FROM tblincident 
-                WHERE active = 'Y' 
-                AND hospitalid = @hospitalid 
-                ORDER BY id DESC 
-                LIMIT 100";
-        cmd = new NpgsqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
-    }
+        //    if (accessLevel == "admin")
+        //    {
+        //                sql = @"SELECT i.*, h.hospital as hospitalname 
+        //                FROM tblincident i 
+        //                INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
+        //                WHERE i.active = 'Y' 
+        //                ORDER BY i.id DESC 
+        //                LIMIT 200";
+        //                cmd = new NpgsqlCommand(sql, conn);
 
-    using var reader = await cmd.ExecuteReaderAsync();
-    while (await reader.ReadAsync())
-    {
-        incidents.Add(new FormModel
+        //            }
+        //            else
+        //    {
+        //                sql = @"SELECT i.*, h.hospital as hospitalname 
+        //            FROM tblincident i 
+        //            INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
+        //            WHERE i.active = 'Y' 
+        //            AND h.hospitalid = @hospitalid
+        //            ORDER BY i.id DESC 
+        //            LIMIT 200";
+        //                cmd = new NpgsqlCommand(sql, conn);
+        //                cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+
+        //            }
+
+        //            using var reader = await cmd.ExecuteReaderAsync();
+        //    while (await reader.ReadAsync())
+        //    {
+        //        incidents.Add(new FormModel
+        //        {
+        //            qarid = reader["qarid"]?.ToString(),
+        //            incidentdate = reader["incidentdate"] as DateTime?,
+        //            summary = reader["summary"]?.ToString(),
+        //            hospitalid = reader["hospitalid"]?.ToString(),
+        //            status = reader["status"]?.ToString(),
+        //            affectedward = reader["affectedward"]?.ToString(),
+        //            HospitalName = reader["hospitalname"]?.ToString(),
+        //            pte = reader["pte"]?.ToString(),
+        //            requester = reader["requester"]?.ToString(),
+        //        });
+        //    }
+
+        //    return View("ViewAllIncidents", incidents);
+        //}
+        [HttpGet]
+        public async Task<IActionResult> ViewAllIncidents(string? selectedHospitalId)
         {
-            qarid = reader["qarid"]?.ToString(),
-            incidentdate = reader["incidentdate"] as DateTime?,
-            summary = reader["summary"]?.ToString(),
-            hospitalid = reader["hospitalid"]?.ToString(),
-            status = reader["status"]?.ToString(),
-            affectedward = reader["affectedward"]?.ToString(),
-        });
-    }
+            var incidents = new List<FormModel>();
+            var hospitalList = new List<SelectListItem>();
 
-    return View("ViewAllIncidents", incidents);
-}
+            var accessLevel = HttpContext.Session.GetString("accessLevel");
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await conn.OpenAsync();
+
+            // Admin gets dropdown list
+            if (accessLevel == "admin")
+            {
+                using (var hospitalCmd = new NpgsqlCommand("SELECT hospitalid, hospital FROM tblhospitals WHERE active = 'Y' ORDER BY hospitalid", conn))
+                using (var reader = await hospitalCmd.ExecuteReaderAsync())
+                {
+                    hospitalList.Add(new SelectListItem { Text = "All Hospitals", Value = "" }); // for all
+                    while (await reader.ReadAsync())
+                    {
+                        hospitalList.Add(new SelectListItem
+                        {
+                            Text = reader["hospital"]?.ToString(),
+                            Value = reader["hospitalid"]?.ToString(),
+                            Selected = selectedHospitalId == reader["hospitalid"]?.ToString()
+                        });
+                    }
+                }
+            }
+
+            // Prepare incidents query
+            string sql;
+            var cmd = new NpgsqlCommand();
+            cmd.Connection = conn;
+
+            if (accessLevel == "admin")
+            {
+                if (!string.IsNullOrEmpty(selectedHospitalId))
+                {
+                    sql = @"SELECT i.*, h.hospital as hospitalname 
+                    FROM tblincident i 
+                    INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
+                    WHERE i.active = 'Y' AND i.hospitalid = @selectedHospitalId
+                    ORDER BY i.id DESC LIMIT 200";
+                    cmd.CommandText = sql;
+                    cmd.Parameters.AddWithValue("selectedHospitalId", selectedHospitalId);
+                }
+                else
+                {
+                    sql = @"SELECT i.*, h.hospital as hospitalname 
+                    FROM tblincident i 
+                    INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
+                    WHERE i.active = 'Y'
+                    ORDER BY i.id DESC LIMIT 200";
+                    cmd.CommandText = sql;
+                }
+            }
+            else
+            {
+                sql = @"SELECT i.*, h.hospital as hospitalname 
+                FROM tblincident i 
+                INNER JOIN tblhospitals h ON i.hospitalid = h.hospitalid 
+                WHERE i.active = 'Y' AND i.hospitalid = @hospitalid
+                ORDER BY i.id DESC LIMIT 200";
+                cmd.CommandText = sql;
+                cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+            }
+
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    incidents.Add(new FormModel
+                    {
+                        qarid = reader["qarid"]?.ToString(),
+                        incidentdate = reader["incidentdate"] as DateTime?,
+                        summary = reader["summary"]?.ToString(),
+                        hospitalid = reader["hospitalid"]?.ToString(),
+                        status = reader["status"]?.ToString(),
+                        affectedward = reader["affectedward"]?.ToString(),
+                        HospitalName = reader["hospitalname"]?.ToString(),
+                        pte = reader["pte"]?.ToString(),
+                        requester = reader["requester"]?.ToString(),
+                    });
+                }
+            }
+
+            ViewBag.HospitalList = hospitalList;
+            ViewBag.SelectedHospitalId = selectedHospitalId;
+
+            return View("ViewAllIncidents", incidents);
+        }
+
 
 
         //view incidents
@@ -1655,6 +1803,20 @@ public async Task<IActionResult> ViewAllIncidents()
 
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
+
+            string hospitalid = null;
+            // Log deletion
+            var logCmd = new NpgsqlCommand(@"
+            INSERT INTO tblincidentlog (qarid, hospitalid, actiontype, actionby, actiondate)
+             VALUES (@qarid, @hospitalid, 'Deleted', @user, NOW())", conn);
+            logCmd.Parameters.AddWithValue("qarid", qarid);
+            logCmd.Parameters.AddWithValue("hospitalid", hospitalid ?? "unknown");
+            logCmd.Parameters.AddWithValue("user", HttpContext.Session.GetString("username") ?? "unknown");
+            await logCmd.ExecuteNonQueryAsync();
+
+
+
+
 
             string sql = "UPDATE tblincident SET active = 'N' WHERE qarid = @qarid";
 

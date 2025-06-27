@@ -10,21 +10,22 @@
 @{
     var accessLevel = Context.Session.GetString("accessLevel");
 }
-<h2> All Incidents</h2>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>QARID</th>
-            <th>Date</th>
-            <th>Summary</th>
-            <th>Hospital ID</th>
-            <th>Status</th>
-            <th>affectedward</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
+
+<table class="view_tbl">
+    <tr>
+        <td colspan="5"><h3> All Incidents</h3></td>
+        <td colspan="6">
+                <form method="get" asp-action="ViewAllIncidents" class="mb-3">
+                    <label for="selectedHospitalId">Select Hospital:</label>
+                    <select name="selectedHospitalId" asp-items="@(new SelectList(ViewBag.HospitalList, "Value", "Text", ViewBag.SelectedHospitalId))" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Hospitals</option>
+                    </select>
+                </form>
+        </td>
+    </tr>
+
+
         @{
             // Group incidents by hospital name
             var groupedByHospital = Model.GroupBy(i => i.HospitalName ?? i.hospitalid);
@@ -32,24 +33,38 @@
 
         @foreach (var hospitalGroup in groupedByHospital)
         {
-            <tr class="table-primary">
-                <td colspan="7"><strong>@hospitalGroup.Key</strong></td> <!-- Hospital name or ID -->
+            <tr>
+                <td colspan="12" style="background-color:steelblue;color:white;font-size:1.2rem;"><strong>@hospitalGroup.Key</strong></td> <!-- Hospital name or ID -->
             </tr>
+
+        <tr>
+            <th>QARID</th>
+            <th>Type</th>
+            <th>RequestBy</th>
+            <th>Summary</th>
+            <th>Summary</th>
+            <th>Hospital ID</th>
+            <th>Status</th>
+            <th>affectedward</th>
+            <th>Action</th>
+        </tr>
 
             @foreach (var incident in hospitalGroup)
             {
                 <tr>
                     <td>@incident.qarid</td>
+                    <td>@incident.pte</td>
+                    <td>@incident.requester</td>
                     <td>@incident.incidentdate?.ToString("yyyy-MM-dd")</td>
                     <td>@incident.investigation</td>
                     <td>@incident.hospitalid</td>
                     <td>@incident.status</td>
                     <td>@incident.affectedward</td>
                     <td>
-                        <a class="btn btn-success" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid, inserthospitalid = incident.hospitalid })">Edit</a>
+                        <a class="icon" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid, inserthospitalid = incident.hospitalid })"><i class="bi bi-pencil-square"></i></a>
                     </td>
                 </tr>
             }
         }
-    </tbody>
+
 </table>

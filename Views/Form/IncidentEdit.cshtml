@@ -372,16 +372,26 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                     <tr>
                         <td style="border-bottom:1px solid lightgrey;width:120px;height:30px;">Open</td>
                         <td style="border-bottom:1px solid lightgrey;height:30px;">
-                            <input type="radio" name="status" value="open" class="form_radio" onclick="textAreaShow5('none');textAreaShow4('none');" checked>
+                            <input type="radio" name="status" value="open" class="form_radio"
+                                   onclick="textAreaShow5('none');textAreaShow4('none');"
+                            @(Model.status?.ToLower() == "open" ? "checked" : "") />
                         </td>
                     </tr>
                     <tr>
                         <td style="border-bottom:1px solid lightgrey;height:30px;">On Hold</td>
-                        <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="hold" onclick="textAreaShow4('inline');textAreaShow5('none');" class="form_radio"></td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">
+                            <input type="radio" name="status" value="hold" class="form_radio"
+                                   onclick="textAreaShow4('inline');textAreaShow5('none');"
+                            @(Model.status?.ToLower() == "hold" ? "checked" : "") />
+                        </td>
                     </tr>
                     <tr>
                         <td style="border-bottom:1px solid lightgrey;height:30px;">Close</td>
-                        <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="closed" onclick="textAreaShow5('inline');textAreaShow4('none');" class="form_radio"></td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">
+                            <input type="radio" name="status" value="closed" class="form_radio"
+                                   onclick="textAreaShow5('inline');textAreaShow4('none');"
+                            @(Model.status?.ToLower() == "closed" ? "checked" : "") />
+                        </td>
                     </tr>
                     <tr>
                         <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;"></td>
@@ -394,17 +404,26 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                     <tr>
                         <td style="border-bottom:1px solid lightgrey;width:120px;height:30px;">Open</td>
                         <td style="border-bottom:1px solid lightgrey;height:30px;">
-                            <input type="radio" name="status" value="open" class="form_radio" onclick="textAreaShow4('none');" checked>
+                            <input type="radio" name="status" value="open" class="form_radio"
+                                   onclick="textAreaShow4('none');"
+                            @(Model.status?.ToLower() == "open" ? "checked" : "") />
                         </td>
                     </tr>
                     <tr>
                         <td style="border-bottom:1px solid lightgrey;height:30px;">On Hold</td>
-                        <td style="border-bottom:1px solid lightgrey;height:30px;"><input type="radio" name="status" value="hold" onclick="textAreaShow4('inline');" class="form_radio"></td>
+                        <td style="border-bottom:1px solid lightgrey;height:30px;">
+                            <input type="radio" name="status" value="hold" class="form_radio"
+                                   onclick="textAreaShow4('inline');"
+                            @(Model.status?.ToLower() == "hold" ? "checked" : "") />
+                        </td>
                     </tr>
                     <tr>
-                        <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;">QA or IPC may close off an Incident</td>
+                        <td colspan="2" style="vertical-align:bottom;padding-bottom:30px;text-align:right;">
+                            QA or IPC may close off an Incident
+                        </td>
                     </tr>
                 </table>
+
             }
         </div>
         <div class="form_grid_item_span3_nc">
@@ -1541,20 +1560,24 @@ Incident Created, Captured and Reported by @Context.Session.GetString("username"
                 document.querySelector("input[name='nearrootcheck'][value='Y']").checked = true;
                 textAreaShow3('inline');
             }
-
-            // On Hold
+        // On Hold / closed
+        const statusVal = "@(Model.status ?? "")".trim().toLowerCase();
+        if (!statusVal) {
             const holdVal = "@(Model.onholddesc ?? "")".trim();
             if (holdVal !== "") {
                 document.querySelector("input[name='status'][value='hold']").checked = true;
                 textAreaShow4('inline');
             }
 
-            // Closed
             const closedVal = "@(Model.closeddesc ?? "")".trim();
             if (closedVal !== "") {
                 document.querySelector("input[name='status'][value='closed']").checked = true;
                 textAreaShow5('inline');
             }
+        }
+
+
+
         });
     </script>
 
