@@ -7,7 +7,8 @@
     var accessLevel = Context.Session.GetString("accessLevel");
 }
 
-<main>
+<p>@Model.rm</p>
+<main style="min-height:200vh;">
     <section class="register_container">
         <img src="/images/mimsnew.png" class="mims_logo" />
 
@@ -62,6 +63,15 @@
                     <option value="@Model.hospitalid">@Model.Hospitals</option>
                 </select>
                 <span asp-validation-for="hospitalid" class="text-danger"></span>
+                <br />
+                <label class="login_label">Access</label>
+                <select class="form-control" asp-for="rm">
+                    <option value="">Please Select</option>
+                    <option value="admin" selected="@(Model.rm == "admin")">Admin (GQAO etc.)</option>
+                    <option value="main" selected="@(Model.rm == "main")">Main (QAO/IPC etc.)</option>
+                    <option value="local" selected="@(Model.rm == "local")">Local (Unit Managers etc.)</option>
+                </select>
+                
             }
             else
             {

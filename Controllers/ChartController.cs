@@ -4,6 +4,7 @@ using Mimsv2.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Mimsv2.Services;
 using DocumentFormat.OpenXml.Office.Word;
+using System.Security.Claims;
 
 namespace Mimsv2.Controllers
 {
@@ -141,6 +142,10 @@ namespace Mimsv2.Controllers
 
 
 
+
+
+
+
         public IActionResult MainPage()
         {
             // placeholder
@@ -154,6 +159,74 @@ namespace Mimsv2.Controllers
         }
 
         //MONTHLY COUNT
+        //    [HttpGet]
+        //    public async Task<IActionResult> GetMonthlyData(string? hospitalid)
+        //    {
+        //        Console.WriteLine(">>> Incoming hospitalid: " + hospitalid);
+
+        //        var data = new List<MonthlyIncidentData>();
+
+        //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //        await conn.OpenAsync();
+
+        //        if (accessLevel == "admin")
+        //        {
+        //            // Admin: filter by inserthospitalid if given, else all hospitals
+        //            if (!string.IsNullOrEmpty(inserthospitalid))
+        //            {
+        //                filterClause = " AND hospitalid = @inserthospitalid";
+        //                cmd.Parameters.AddWithValue("@inserthospitalid", inserthospitalid);
+        //            }
+        //        }
+        //        else if (accessLevel == "main")
+        //        {
+        //            // Main: only incidents for loginHospitalId
+        //            filterClause = " AND hospitalid = @loginhospitalid";
+        //            cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+        //        }
+        //        else
+        //        {
+        //            // Local: incidents for loginHospitalId AND requester = loginname
+        //            filterClause = " AND hospitalid = @loginhospitalid AND requester = @requester";
+        //            cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+        //            cmd.Parameters.AddWithValue("@requester", loginname ?? "");
+        //        }
+
+        //        string sql = @"
+        //    SELECT 
+        //        TO_CHAR(datecaptured, 'Mon') AS month,
+        //        EXTRACT(MONTH FROM datecaptured) AS month_number,
+        //        COUNT(*) AS count
+        //    FROM tblincident
+        //    WHERE active = 'Y'
+        //      AND EXTRACT(YEAR FROM datecaptured) = EXTRACT(YEAR FROM CURRENT_DATE)
+        //";
+
+        //        if (!string.IsNullOrEmpty(hospitalid))
+        //        {
+        //            sql += " AND hospitalid = @hospitalid";
+        //        }
+
+        //        sql += " GROUP BY month, month_number ORDER BY month_number;";
+
+        //        using var cmd = new NpgsqlCommand(sql, conn);
+        //        if (!string.IsNullOrEmpty(hospitalid))
+        //        {
+        //            cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+        //        }
+
+        //        using var reader = await cmd.ExecuteReaderAsync();
+        //        while (await reader.ReadAsync())
+        //        {
+        //            data.Add(new MonthlyIncidentData
+        //            {
+        //                Month = reader["month"].ToString()!,
+        //                Count = Convert.ToInt32(reader["count"])
+        //            });
+        //        }
+
+        //        return Json(data);
+        //    }
         [HttpGet]
         public async Task<IActionResult> GetMonthlyData(string? hospitalid)
         {
@@ -161,10 +234,41 @@ namespace Mimsv2.Controllers
 
             var data = new List<MonthlyIncidentData>();
 
+            var accessLevel = HttpContext.Session.GetString("accessLevel")?.ToLower();
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+            var loginname = HttpContext.Session.GetString("loginname");
+
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            string sql = @"
+            string filterClause = "";
+
+            using var cmd = new NpgsqlCommand();
+            cmd.Connection = conn;
+
+            // Apply role-based filtering
+            if (accessLevel == "admin")
+            {
+                if (!string.IsNullOrEmpty(hospitalid))
+                {
+                    filterClause += " AND hospitalid = @hospitalid";
+                    cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+                }
+            }
+            else if (accessLevel == "main")
+            {
+                filterClause += " AND hospitalid = @loginhospitalid";
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+            }
+            else // local
+            {
+                filterClause += " AND hospitalid = @loginhospitalid AND requester = @requester";
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+                cmd.Parameters.AddWithValue("@requester", loginname ?? "");
+            }
+
+            // Build final SQL
+            string sql = $@"
         SELECT 
             TO_CHAR(datecaptured, 'Mon') AS month,
             EXTRACT(MONTH FROM datecaptured) AS month_number,
@@ -172,20 +276,12 @@ namespace Mimsv2.Controllers
         FROM tblincident
         WHERE active = 'Y'
           AND EXTRACT(YEAR FROM datecaptured) = EXTRACT(YEAR FROM CURRENT_DATE)
+          {filterClause}
+        GROUP BY month, month_number 
+        ORDER BY month_number;
     ";
 
-            if (!string.IsNullOrEmpty(hospitalid))
-            {
-                sql += " AND hospitalid = @hospitalid";
-            }
-
-            sql += " GROUP BY month, month_number ORDER BY month_number;";
-
-            using var cmd = new NpgsqlCommand(sql, conn);
-            if (!string.IsNullOrEmpty(hospitalid))
-            {
-                cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
-            }
+            cmd.CommandText = sql;
 
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -200,29 +296,106 @@ namespace Mimsv2.Controllers
             return Json(data);
         }
 
+
+
+
         //COUNT PTE
+        //    [HttpGet]
+        //    public async Task<IActionResult> GetPteDistribution(string? hospitalid)
+        //    {
+        //        var results = new List<object>();
+
+        //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //        await conn.OpenAsync();
+
+        //        string sql = @"
+        //    SELECT pte, COUNT(*) AS count
+        //    FROM tblincident
+        //    WHERE active = 'Y'
+        //      AND EXTRACT(YEAR FROM datecaptured) = 2025
+        //      " + (string.IsNullOrEmpty(hospitalid) ? "" : " AND hospitalid = @hospitalid") + @"
+        //    GROUP BY pte
+        //    ORDER BY count DESC;
+        //";
+
+        //        using var cmd = new NpgsqlCommand(sql, conn);
+        //        if (!string.IsNullOrEmpty(hospitalid))
+        //        {
+        //            cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+        //        }
+
+        //        using var reader = await cmd.ExecuteReaderAsync();
+        //        while (await reader.ReadAsync())
+        //        {
+        //            results.Add(new
+        //            {
+        //                label = reader["pte"]?.ToString() ?? "Unknown",
+        //                count = Convert.ToInt32(reader["count"])
+        //            });
+        //        }
+
+        //        return Json(results);
+        //    }
         [HttpGet]
-        public async Task<IActionResult> GetPteDistribution(string? hospitalid)
+        public async Task<IActionResult> GetPteDistribution(string? hospitalid, int? year)
         {
             var results = new List<object>();
+
+            var user = (ClaimsPrincipal)User;
+            var accessLevel = user.FindFirst("AccessLevel")?.Value?.ToLower();
+            var loginname = HttpContext.Session.GetString("username");
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
+            int reportYear = year ?? DateTime.Now.Year;
 
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            string sql = @"
+            var whereClauses = new List<string>
+    {
+        "active = 'Y'",
+        "EXTRACT(YEAR FROM datecaptured) = @year"
+    };
+
+            if (accessLevel == "admin")
+            {
+                if (!string.IsNullOrEmpty(hospitalid))
+                {
+                    whereClauses.Add("hospitalid = @hospitalid");
+                }
+            }
+            else if (accessLevel == "main")
+            {
+                whereClauses.Add("hospitalid = @loginhospitalid");
+            }
+            else
+            {
+                whereClauses.Add("hospitalid = @loginhospitalid");
+                whereClauses.Add("requester = @requester");
+            }
+
+            string sql = $@"
         SELECT pte, COUNT(*) AS count
         FROM tblincident
-        WHERE active = 'Y'
-          AND EXTRACT(YEAR FROM datecaptured) = 2025
-          " + (string.IsNullOrEmpty(hospitalid) ? "" : " AND hospitalid = @hospitalid") + @"
+        WHERE {string.Join(" AND ", whereClauses)}
         GROUP BY pte
-        ORDER BY count DESC;
-    ";
+        ORDER BY count DESC;";
 
             using var cmd = new NpgsqlCommand(sql, conn);
-            if (!string.IsNullOrEmpty(hospitalid))
+            cmd.Parameters.AddWithValue("@year", reportYear);
+
+            if (accessLevel == "admin" && !string.IsNullOrEmpty(hospitalid))
             {
                 cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+            }
+            else if (accessLevel == "main" || accessLevel == "local")
+            {
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+            }
+
+            if (accessLevel == "local")
+            {
+                cmd.Parameters.AddWithValue("@requester", loginname ?? "");
             }
 
             using var reader = await cmd.ExecuteReaderAsync();
@@ -238,71 +411,215 @@ namespace Mimsv2.Controllers
             return Json(results);
         }
 
+
+
         //COUNT PTE end
 
         //COUNT incidentype
-        [HttpGet]
-        public async Task<IActionResult> GetIncidentTypeDistribution(string? hospitalid)
+    //    [HttpGet]
+    //    public async Task<IActionResult> GetIncidentTypeDistribution(string? hospitalid)
+    //    {
+    //        var results = new List<object>();
+
+    //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+    //        await conn.OpenAsync();
+
+    //        string sql = @"
+    //    SELECT incidenttype, COUNT(*) AS count
+    //    FROM tblincident
+    //    WHERE active = 'Y'
+    //      AND EXTRACT(YEAR FROM datecaptured) = 2025
+    //      " + (string.IsNullOrEmpty(hospitalid) ? "" : " AND hospitalid = @hospitalid") + @"
+    //    GROUP BY incidenttype
+    //    ORDER BY count DESC;
+    //";
+
+    //        using var cmd = new NpgsqlCommand(sql, conn);
+    //        if (!string.IsNullOrEmpty(hospitalid))
+    //        {
+    //            cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+    //        }
+
+    //        using var reader = await cmd.ExecuteReaderAsync();
+    //        while (await reader.ReadAsync())
+    //        {
+    //            results.Add(new
+    //            {
+    //                label = reader["incidenttype"]?.ToString() ?? "Unknown",
+    //                count = Convert.ToInt32(reader["count"])
+    //            });
+    //        }
+
+    //        return Json(results);
+    //    }
+    [HttpGet]
+public async Task<IActionResult> GetIncidentTypeDistribution(string? hospitalid, int? year)
+{
+    var results = new List<object>();
+
+    var user = (ClaimsPrincipal)User;
+    var accessLevel = user.FindFirst("AccessLevel")?.Value?.ToLower();
+    var loginname = HttpContext.Session.GetString("username");
+    var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
+    int reportYear = year ?? DateTime.Now.Year;
+
+    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+    await conn.OpenAsync();
+
+    // Build WHERE clause
+    var whereClauses = new List<string>
+    {
+        "active = 'Y'",
+        "EXTRACT(YEAR FROM datecaptured) = @year"
+    };
+
+    if (accessLevel == "admin")
+    {
+        if (!string.IsNullOrEmpty(hospitalid))
         {
-            var results = new List<object>();
+            whereClauses.Add("hospitalid = @hospitalid");
+        }
+    }
+    else if (accessLevel == "main")
+    {
+        whereClauses.Add("hospitalid = @loginhospitalid");
+    }
+    else // local
+    {
+        whereClauses.Add("hospitalid = @loginhospitalid");
+        whereClauses.Add("requester = @requester");
+    }
 
-            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            await conn.OpenAsync();
-
-            string sql = @"
+    string sql = $@"
         SELECT incidenttype, COUNT(*) AS count
         FROM tblincident
-        WHERE active = 'Y'
-          AND EXTRACT(YEAR FROM datecaptured) = 2025
-          " + (string.IsNullOrEmpty(hospitalid) ? "" : " AND hospitalid = @hospitalid") + @"
+        WHERE {string.Join(" AND ", whereClauses)}
         GROUP BY incidenttype
-        ORDER BY count DESC;
-    ";
+        ORDER BY count DESC;";
 
-            using var cmd = new NpgsqlCommand(sql, conn);
-            if (!string.IsNullOrEmpty(hospitalid))
-            {
-                cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
-            }
+    using var cmd = new NpgsqlCommand(sql, conn);
+    cmd.Parameters.AddWithValue("@year", reportYear);
 
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                results.Add(new
-                {
-                    label = reader["incidenttype"]?.ToString() ?? "Unknown",
-                    count = Convert.ToInt32(reader["count"])
-                });
-            }
+    if (accessLevel == "admin" && !string.IsNullOrEmpty(hospitalid))
+    {
+        cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+    }
+    else if (accessLevel == "main" || accessLevel == "local")
+    {
+        cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+    }
 
-            return Json(results);
-        }
+    if (accessLevel == "local")
+    {
+        cmd.Parameters.AddWithValue("@requester", loginname ?? "");
+    }
+
+    using var reader = await cmd.ExecuteReaderAsync();
+    while (await reader.ReadAsync())
+    {
+        results.Add(new
+        {
+            label = reader["incidenttype"]?.ToString() ?? "Unknown",
+            count = Convert.ToInt32(reader["count"])
+        });
+    }
+
+    return Json(results);
+}
+
 
         //COUNT incidenttype end
 
         //COUNT Affectedward
+        //    [HttpGet]
+        //    public async Task<IActionResult> GetTopAffectedWards(string? hospitalid)
+        //    {
+        //        var results = new List<object>();
+
+        //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //        await conn.OpenAsync();
+
+        //        string sql = @"
+        //    SELECT affectedward, COUNT(*) AS totalincidents 
+        //    FROM tblincident 
+        //    WHERE active = 'Y'
+        //      AND datecaptured >= (CURRENT_DATE - INTERVAL '6 months')
+        //      " + (string.IsNullOrEmpty(hospitalid) ? "" : " AND hospitalid = @hospitalid") + @"
+        //    GROUP BY affectedward
+        //    ORDER BY totalincidents DESC 
+        //    LIMIT 10;
+        //";
+
+        //        using var cmd = new NpgsqlCommand(sql, conn);
+        //        if (!string.IsNullOrEmpty(hospitalid))
+        //            cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+
+        //        using var reader = await cmd.ExecuteReaderAsync();
+        //        while (await reader.ReadAsync())
+        //        {
+        //            results.Add(new
+        //            {
+        //                ward = reader["affectedward"]?.ToString() ?? "Unknown",
+        //                count = Convert.ToInt32(reader["totalincidents"])
+        //            });
+        //        }
+
+        //        return Json(results);
+        //    }
+
         [HttpGet]
         public async Task<IActionResult> GetTopAffectedWards(string? hospitalid)
         {
             var results = new List<object>();
 
+            var user = (ClaimsPrincipal)User;
+            var accessLevel = user.FindFirst("AccessLevel")?.Value?.ToLower();
+            var loginname = HttpContext.Session.GetString("username");
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            string sql = @"
+            var whereClauses = new List<string>
+    {
+        "active = 'Y'",
+        "datecaptured >= (CURRENT_DATE - INTERVAL '6 months')"
+    };
+
+            if (accessLevel == "admin")
+            {
+                if (!string.IsNullOrEmpty(hospitalid))
+                    whereClauses.Add("hospitalid = @hospitalid");
+            }
+            else if (accessLevel == "main")
+            {
+                whereClauses.Add("hospitalid = @loginhospitalid");
+            }
+            else // local
+            {
+                whereClauses.Add("hospitalid = @loginhospitalid");
+                whereClauses.Add("requester = @requester");
+            }
+
+            string sql = $@"
         SELECT affectedward, COUNT(*) AS totalincidents 
         FROM tblincident 
-        WHERE active = 'Y'
-          AND datecaptured >= (CURRENT_DATE - INTERVAL '6 months')
-          " + (string.IsNullOrEmpty(hospitalid) ? "" : " AND hospitalid = @hospitalid") + @"
+        WHERE {string.Join(" AND ", whereClauses)}
         GROUP BY affectedward
         ORDER BY totalincidents DESC 
         LIMIT 10;
     ";
 
             using var cmd = new NpgsqlCommand(sql, conn);
-            if (!string.IsNullOrEmpty(hospitalid))
+
+            if (accessLevel == "admin" && !string.IsNullOrEmpty(hospitalid))
                 cmd.Parameters.AddWithValue("@hospitalid", hospitalid);
+            else if (accessLevel == "main" || accessLevel == "local")
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+
+            if (accessLevel == "local")
+                cmd.Parameters.AddWithValue("@requester", loginname ?? "");
 
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())

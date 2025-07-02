@@ -270,8 +270,8 @@ namespace Mimsv2.Controllers
             {
                 //"admin" => RedirectToAction("AdminDashboard", "Home"),
                 "admin" => RedirectToAction("AdminPage", "Chart"),
-                "main" => RedirectToAction("MainDashboard", "Home"),
-                "local" => RedirectToAction("LocalDashboard", "Home"),
+                "main" => RedirectToAction("AdminPage", "Chart"),
+                "local" => RedirectToAction("AdminPage", "Chart"),
                 _ => RedirectToAction("Index", "Home")
             };
 
@@ -287,9 +287,66 @@ namespace Mimsv2.Controllers
 
 
 
-        public async Task<IActionResult> Users()
+        //public async Task<IActionResult> Users()
+        //{
+        //    var users = new List<LoginModel>();
+
+        //    var accessLevel = HttpContext.Session.GetString("accessLevel");
+        //    var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+
+        //    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //    await conn.OpenAsync();
+
+        //    // Base SQL
+        //    string sql = @"
+        //SELECT u.id, u.loginname, u.username, u.surname, u.email, u.active,
+        //       u.department, u.hospitalid, u.titles, u.rm, h.hospital AS hospitalname
+        //FROM tblusers u
+        //INNER JOIN tblhospitals h ON u.hospitalid = h.hospitalid
+        //WHERE u.active = 'Y' AND h.hospitalid != '0'";
+
+        //    // Add hospital filter for non-admin
+        //    if (accessLevel != "admin")
+        //    {
+        //        sql += " AND u.hospitalid = @loginhospitalid";
+        //    }
+
+        //    sql += " ORDER BY u.hospitalid";
+
+        //    using var cmd = new NpgsqlCommand(sql, conn);
+
+        //    if (accessLevel != "admin")
+        //    {
+        //        cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? (object)DBNull.Value);
+        //    }
+
+        //    using var reader = await cmd.ExecuteReaderAsync();
+
+        //    while (await reader.ReadAsync())
+        //    {
+        //        users.Add(new LoginModel
+        //        {
+        //            id = Convert.ToInt32(reader["id"]),
+        //            loginname = reader["loginname"].ToString(),
+        //            username = reader["username"].ToString(),
+        //            surname = reader["surname"].ToString(),
+        //            email = reader["email"].ToString(),
+        //            active = reader["active"].ToString(),
+        //            department = reader["department"].ToString(),
+        //            hospitalid = reader["hospitalid"].ToString(),
+        //            titles = reader["titles"].ToString(),
+        //            rm = reader["rm"].ToString(),
+        //            hospitalname = reader["hospitalname"].ToString()
+        //        });
+        //    }
+
+        //    return View(users);
+        //}
+
+        public async Task<IActionResult> Users(string? selectedHospitalId)
         {
             var users = new List<LoginModel>();
+            var hospitals = new List<HospitalModel>();
 
             var accessLevel = HttpContext.Session.GetString("accessLevel");
             var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
@@ -297,7 +354,22 @@ namespace Mimsv2.Controllers
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            // Base SQL
+            // Get list of hospitals for dropdown
+            var hospitalSql = "SELECT hospitalid, hospital FROM tblhospitals WHERE hospitalid != '0' ORDER BY hospital";
+            using (var hospitalCmd = new NpgsqlCommand(hospitalSql, conn))
+            using (var hospitalReader = await hospitalCmd.ExecuteReaderAsync())
+            {
+                while (await hospitalReader.ReadAsync())
+                {
+                    hospitals.Add(new HospitalModel
+                    {
+                        hospitalid = hospitalReader["hospitalid"].ToString(),
+                        hospital = hospitalReader["hospital"].ToString()
+                    });
+                }
+            }
+
+            // User query
             string sql = @"
         SELECT u.id, u.loginname, u.username, u.surname, u.email, u.active,
                u.department, u.hospitalid, u.titles, u.rm, h.hospital AS hospitalname
@@ -305,23 +377,24 @@ namespace Mimsv2.Controllers
         INNER JOIN tblhospitals h ON u.hospitalid = h.hospitalid
         WHERE u.active = 'Y' AND h.hospitalid != '0'";
 
-            // Add hospital filter for non-admin
             if (accessLevel != "admin")
             {
                 sql += " AND u.hospitalid = @loginhospitalid";
+            }
+            else if (!string.IsNullOrEmpty(selectedHospitalId))
+            {
+                sql += " AND u.hospitalid = @selectedHospitalId";
             }
 
             sql += " ORDER BY u.hospitalid";
 
             using var cmd = new NpgsqlCommand(sql, conn);
-
             if (accessLevel != "admin")
-            {
                 cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? (object)DBNull.Value);
-            }
+            else if (!string.IsNullOrEmpty(selectedHospitalId))
+                cmd.Parameters.AddWithValue("@selectedHospitalId", selectedHospitalId);
 
             using var reader = await cmd.ExecuteReaderAsync();
-
             while (await reader.ReadAsync())
             {
                 users.Add(new LoginModel
@@ -339,6 +412,13 @@ namespace Mimsv2.Controllers
                     hospitalname = reader["hospitalname"].ToString()
                 });
             }
+            ViewBag.HospitalList = hospitals
+    .Select(h => new SelectListItem { Value = h.hospitalid, Text = h.hospital })
+    .ToList();
+
+            ViewBag.SelectedHospitalId = selectedHospitalId;
+            ViewBag.Hospitals = hospitals;
+            ViewBag.SelectedHospitalId = selectedHospitalId;
 
             return View(users);
         }
@@ -422,7 +502,7 @@ VALUES
             await conn.OpenAsync();
 
             // Departments
-            string deptSql = "SELECT department FROM tbldepartments ORDER BY department";
+            string deptSql = "SELECT department FROM tbldepartments WHERE description = 'dpt' ORDER BY department";
             using var deptCmd = new NpgsqlCommand(deptSql, conn);
             using var deptReader = await deptCmd.ExecuteReaderAsync();
 
@@ -530,7 +610,7 @@ VALUES
 
 
 
-
+    
         public async Task<IActionResult> EditUsers(string hospitalId)
         {
             var users = new List<LoginModel>();
@@ -565,8 +645,8 @@ VALUES
                 });
             }
 
-            return View(Users);
-            //return View(EditUsers);
+            //return View(Users);
+            return View(EditUsers);
         }
 
 
@@ -603,6 +683,7 @@ VALUES
                 model.hospitalid = reader["hospitalid"].ToString();
                 model.titles = reader["titles"].ToString();
                 model.active = reader["active"].ToString();
+                model.rm = reader["rm"].ToString();
             }
 
             await PopulateDropdowns(model);
@@ -624,7 +705,8 @@ VALUES
             department = @department,
             hospitalid = @hospitalid,
             titles = @titles,
-            active = @active
+            active = @active,
+            rm = @rm
         WHERE id = @id";
 
             using var cmd = new NpgsqlCommand(sql, conn);
@@ -637,6 +719,7 @@ VALUES
             cmd.Parameters.AddWithValue("titles", model.titles);
             cmd.Parameters.AddWithValue("active", submit == "Delete" ? "N" : "Y");
             cmd.Parameters.AddWithValue("id", model.id);
+            cmd.Parameters.AddWithValue("rm", model.rm);
 
             await cmd.ExecuteNonQueryAsync();
 

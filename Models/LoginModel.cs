@@ -29,4 +29,10 @@ namespace Mimsv2.Models
 
 
     }
+
+    public class HospitalModel
+    {
+        public string hospitalid { get; set; }
+        public string hospital { get; set; }
+    }
 }

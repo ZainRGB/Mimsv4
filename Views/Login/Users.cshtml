@@ -6,23 +6,43 @@
 @{
     var accessLevel = Context.Session.GetString("accessLevel");
 }
+@{
+    var hospitals = ViewBag.Hospitals as List<HospitalModel>;
+    var selectedHospitalId = ViewBag.SelectedHospitalId as string;
+}
 
-<h3>Users Access: @accessLevel</h3>
+<section class="dash_container">
+    <div class="dash_item_span3"><h4>Users Access: @accessLevel</h4></div>
+    <div class="dash_item_span3">
+        @if (accessLevel == "admin"){
+        <form method="get" asp-action="Users" class="mb-3">
+            <label for="selectedHospitalId">Select Hospital:</label>
+            <select name="selectedHospitalId"
+                    asp-items="@(new SelectList(ViewBag.HospitalList, "Value", "Text", ViewBag.SelectedHospitalId))"
+                    class="form-select"
+                    onchange="this.form.submit()">
+                <option value="">All Hospitals</option>
+            </select>
+        </form>
+        }
 
+    </div>
 
+    <div class="dash_item_span6">
 
 @foreach (var group in Model.GroupBy(u => new { u.hospitalid, u.hospitalname }))
 {
-    <h3 class="mt-4">@group.Key.hospitalname (ID: @group.Key.hospitalid)</h3>
+    <h4 class="mt-2">@group.Key.hospitalname</h4>
 
-    <table class="form_table mb-5">
+    <table class="view_tbl" id="myTable">
         <thead>
 
             <tr>
-                <th style="width:90px">Login Name</th>
-                <th style="width:120px">Full Name</th>
-                <th style="width:100px">Email</th>
-                <th>Department</th>
+                <th style="width:30px;">Nr.</th>
+                <th style="width:90px"><input type="text" id="myInput1" oninput="filterTable()" placeholder="Login Name" class="tbodysearch"></th>
+                <th style="width:120px"><input type="text" id="myInput2" oninput="filterTable()" placeholder="Full Name" class="tbodysearch"></th>
+                <th style="width:100px"><input type="text" id="myInput3" oninput="filterTable()" placeholder="Email" class="tbodysearch"></th>
+                <th><input type="text" id="myInput4" oninput="filterTable()" placeholder="Department" class="tbodysearch"></th>
                 <th>Title</th>
                 @if (accessLevel == "admin"){
                 <th>Access Level</th>
@@ -35,6 +55,7 @@
             @foreach (var user in group)
             {
                 <tr>
+                    <td></td>
                     <td>@user.loginname</td>
                     <td>@user.username @user.surname</td>
                     <td>@user.email</td>
@@ -59,3 +80,42 @@
         </tbody>
     </table>
 }
+
+    </div>
+</section>
+
+<script>
+    function filterTable() {
+      var table = document.getElementById("myTable");
+      var tr = table.getElementsByTagName("tr");
+
+      // Get all filter values
+      var filters = [];
+      for (var i = 1; i <= 8; i++) {
+        var input = document.getElementById("myInput" + i);
+        filters[i] = input ? input.value.toUpperCase() : "";
+      }
+
+      // Loop through all rows (skip header row at index 0)
+      for (var i = 1; i < tr.length; i++) {
+        var tds = tr[i].getElementsByTagName("td");
+        var showRow = true;
+
+        // Check each column against corresponding filter
+        for (var col = 1; col <= 8; col++) {
+          if (filters[col] !== "" && tds[col]) {
+            var txtValue = tds[col].textContent || tds[col].innerText;
+            if (txtValue.toUpperCase().indexOf(filters[col]) === -1) {
+              showRow = false;
+              break;
+            }
+          }
+        }
+
+        // Skip header row (i=0) from being hidden
+        if (i > 0) {
+          tr[i].style.display = showRow ? "" : "none";
+        }
+      }
+    }
+</script>

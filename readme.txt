@@ -51,3 +51,11 @@ CREATE TABLE tblincidentlog (
     actiondate TIMESTAMP,        -- when the action happened
     notes TEXT                   -- optional notes like countdown days left
 );
+
+
+//update user access
+UPDATE tblusers
+SET rm = 'local'
+WHERE rm IS NULL 
+   OR rm = '' 
+   OR rm = 'message';

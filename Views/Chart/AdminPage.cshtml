@@ -3,10 +3,19 @@
 @{
     ViewData["Title"] = "Mims Admin Page";
 }
+@{
+    var accessLevel = Context.Session.GetString("accessLevel");
+    var username = @Context.Session.GetString("username");
+    var surname = @Context.Session.GetString("surname");
+    var titles = @Context.Session.GetString("titles");
+}
+
 
 <section class="dash_container">
 
     <div class="dash_item_span3">
+        <b>@username @surname</b> <i>(@titles)</i>
+@if (accessLevel == "admin"){
         @if (string.IsNullOrEmpty(Model.inserthospitalid))
         {
             <p>All Hospitals</p>
@@ -15,19 +24,32 @@
         {
             <h3>@Model.HospitalName</h3>
         }
+}
 
-      
     </div>
 
     <div class="dash_item_span3">
-        <form method="get" asp-controller="Chart" asp-action="AdminPage" id="hospitalForm">
-            <div class="form-group mb-3">
-                <label>Select Hospital:</label>
-                <select asp-for="inserthospitalid" asp-items="Model.Hospitals" class="form-control" onchange="document.getElementById('hospitalForm').submit();">
-                    <option value="">All Hospitals</option>
-                </select>
-            </div>
-        </form>
+        @if (accessLevel == "admin"){
+            <form method="get" asp-controller="Chart" asp-action="AdminPage" id="hospitalForm">
+                <div class="form-group mb-3">
+                    <label>Select Hospital:</label>
+                    <select asp-for="inserthospitalid" asp-items="Model.Hospitals" class="form-control" onchange="document.getElementById('hospitalForm').submit();">
+                        <option value="">All Hospitals</option>
+                    </select>
+                </div>
+            </form>
+        }
+        else
+        {
+ 
+                <div class="form-group mb-3">
+                    <label>Hospital:</label>
+                    <select asp-for="inserthospitalid" asp-items="Model.Hospitals" class="form-control" disabled>
+                        <option value="">All Hospitals</option>
+                    </select>
+                </div>
+ 
+        }
     </div>
 
 
@@ -259,12 +281,8 @@
 
 
 <script>
-
     document.addEventListener("DOMContentLoaded", function () {
         fetch(`/Chart/GetMonthlyData?hospitalid=${selectedHospitalId}`)
-
-      
-
             .then(res => res.json())
             .then(data => {
                 console.log("Chart data received:", data);
@@ -278,10 +296,6 @@
                     "red", "green", "blue", "orange", "brown", "purple",
                     "darkblue", "darkorange", "yellow", "grey", "darkgreen", "pink"
                 ];
-
-
-               
-
 
                 const ctx = document.getElementById('monthlyChart').getContext('2d');
                 new Chart(ctx, {
