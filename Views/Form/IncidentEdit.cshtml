@@ -334,7 +334,7 @@
 
         <div class="form_grid_item">
             Status<br />
-            @if (Model.AccessLevel == "admin")
+            @if (Model.AccessLevel == "admin" || Model.AccessLevel == "main")
             {
                 <table style="width:100%;padding:6px;height:100%;">
                     <tr>

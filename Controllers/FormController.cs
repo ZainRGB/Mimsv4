@@ -865,7 +865,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             cmd.Parameters.AddWithValue("@summary2", model.summary2 ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@medrelatedtotal", model.medrelatedtotal ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@reportedbydepartment", model.CapturedbyDpt ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@incidentexpires", DateTime.Now.Date.AddDays(5));
+            cmd.Parameters.AddWithValue("@incidentexpires", DateTime.Now.Date.AddDays(10));
             cmd.Parameters.AddWithValue("@incidentareanight", model.incidentareanight ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@acquired", model.acquired ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@incidenttype", model.incidenttype ?? (object)DBNull.Value);
@@ -1710,8 +1710,6 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-
-
             //count incidents
             ViewBag.OpenCount = 0;
             ViewBag.ClosedCount = 0;
@@ -1734,9 +1732,14 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                     countCmd.Parameters.AddWithValue("selectedHospitalId", selectedHospitalId);
                 }
             }
+            else if (accessLevel == "main")
+            {
+                countSql += " AND hospitalid = @hospitalid";
+                countCmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+            }
             else
             {
-                countSql += " AND hospitalid = @hospitalid AND username = @username";
+                countSql += " AND hospitalid = @hospitalid AND requester = @username";
                 countCmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
                 countCmd.Parameters.AddWithValue("username", loginname);
             }
@@ -1758,15 +1761,6 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             }
 
             //count incidents
-
-
-
-
-
-
-
-
-
 
 
             // Admin gets hospital dropdown list
@@ -1806,9 +1800,14 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                     cmd.Parameters.AddWithValue("selectedHospitalId", selectedHospitalId);
                 }
             }
+            else if (accessLevel == "main")
+            {
+                sql += " AND i.hospitalid = @hospitalid";
+                cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
+            }
             else
             {
-                sql += " AND i.hospitalid = @hospitalid AND i.username = @username";
+                sql += " AND i.hospitalid = @hospitalid AND i.requester = @username";
                 cmd.Parameters.AddWithValue("hospitalid", loginHospitalId);
                 cmd.Parameters.AddWithValue("username", loginname);
             }
@@ -1838,6 +1837,9 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                         HospitalName = reader["hospitalname"]?.ToString(),
                         pte = reader["pte"]?.ToString(),
                         requester = reader["requester"]?.ToString(),
+                        description = reader["description"]?.ToString(),
+                        datecaptured = reader["datecaptured"] as DateTime?,
+                        incidentexpires = reader["incidentexpires"] as DateTime?,
                     });
                 }
             }

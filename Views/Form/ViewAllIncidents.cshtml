@@ -12,18 +12,52 @@
     var accessLevel = Context.Session.GetString("accessLevel");
 }
 <div class="status-summary">
-    <strong>Status Totals:</strong><br />
-    🟢 <b>Open:</b> @ViewBag.OpenCount <br />
-    🔴 <b>Closed:</b> @ViewBag.ClosedCount <br />
+    <strong>Status Totals:</strong>
+    🟢 <b>Open:</b> @ViewBag.OpenCount 
+
     ⏸ <b>On Hold:</b> @ViewBag.HoldCount
+
+        🔴 <b>Closed:</b> @ViewBag.ClosedCount 
 </div>
 
-<table class="view_tbl">
+@{
+    string selectedStatus = (ViewBag.SelectedStatus as string ?? "").ToLower();
+    int open = ViewBag.OpenCount ?? 0;
+    int closed = ViewBag.ClosedCount ?? 0;
+    int hold = ViewBag.HoldCount ?? 0;
+    int total = open + closed + hold;
+}
+@if (selectedStatus == "open")
+{
+    <div class="alert alert-info">
+        You are viewing <strong>Open Incidents | Total: @ViewBag.OpenCount</strong>
+    </div>
+}
+else if (selectedStatus == "closed")
+{
+    <div class="alert alert-secondary">
+        You are viewing <strong>Closed Incidents | Total: @ViewBag.ClosedCount </strong>
+    </div>
+}
+else if (selectedStatus == "hold")
+{
+    <div class="alert alert-warning">
+        You are viewing <strong>On Hold Incidents | Total: @ViewBag.HoldCount</strong>
+    </div>
+}
+else
+{
+    <div class="alert alert-dark">
+        You are viewing <strong>All Incidents | Total: @total</strong>
+    </div>
+}
+
+<table class="view_tbl" id="myTable">
     @if (accessLevel == "admin")
     {
     <tr>
-        <td colspan="5"><h3> All Incidents</h3></td>
-        <td colspan="6">
+        <td colspan="6"><h3> All Incidents</h3></td>
+        <td colspan="4">
                 <form method="get" asp-action="ViewAllIncidents" class="mb-3">
                     <label for="selectedHospitalId">Select Hospital:</label>
                     <select name="selectedHospitalId" asp-items="@(new SelectList(ViewBag.HospitalList, "Value", "Text", ViewBag.SelectedHospitalId))" class="form-select" onchange="this.form.submit()">
@@ -45,29 +79,119 @@
                 <td colspan="12" style="background-color:steelblue;color:white;font-size:1.2rem;"><strong>@hospitalGroup.Key</strong></td> <!-- Hospital name or ID -->
             </tr>
 
+
+
+
+
+
+
         <tr>
-            <th>QARID</th>
-            <th>Type</th>
-            <th>RequestBy</th>
-            <th>Summary</th>
-            <th>Summary</th>
-            <th>Hospital ID</th>
-            <th>Status</th>
-            <th>affectedward</th>
-            <th>Action</th>
+            <th></th>
+            <th style="width:160px;"><input type="text" id="myInput1" oninput="filterTable()" placeholder="QARID" class="tbodysearch"></th>
+            <th style="width:160px;"><input type="text" id="myInput2" oninput="filterTable()" placeholder="Type" class="tbodysearch"></th>
+            <th style="width:160px;"><input type="text" id="myInput3" oninput="filterTable()" placeholder="Request By" class="tbodysearch"></th>
+            <th style="width:120px;"><input type="text" id="myInput4" oninput="filterTable()" placeholder="Incident Date" class="tbodysearch"></th>
+            <th><input type="text" id="myInput5" oninput="filterTable()" placeholder="Summary" class="tbodysearch"></th>
+            <th style="width:80px;"><input type="text" id="myInput6" oninput="filterTable()" placeholder="Status" class="tbodysearch"></th>
+            <th style="width:160px;"><input type="text" id="myInput7" oninput="filterTable()" placeholder="Affected Ward" class="tbodysearch"></th>
+            <th style="width:120px;"><input type="text" id="myInput8" oninput="filterTable()" placeholder="Expiry Date" class="tbodysearch"></th>
+            <th style="width:40px;">Action</th>
         </tr>
 
             @foreach (var incident in hospitalGroup)
             {
                 <tr>
+                    <td style="width:30px;"></td>
                     <td>@incident.qarid</td>
                     <td>@incident.pte</td>
                     <td>@incident.requester</td>
                     <td>@incident.incidentdate?.ToString("yyyy-MM-dd")</td>
-                    <td>@incident.investigation</td>
-                    <td>@incident.hospitalid</td>
+                    <td>
+                            <div class="read-box">
+                            <span class="read-text short">
+                            @(incident.description?.Length > 100
+                                    ? incident.description.Substring(0, 100) + "..."
+                                    : incident.description)
+                             </span>
+                         <span class="read-text full" style="display:none;">
+                            @incident.description
+                           </span>
+
+                        @if (!string.IsNullOrEmpty(incident.description) && incident.description.Length > 100)
+                        {
+                    <a href="#" class="read-toggle" onclick="toggleRead(this, event)">Read more</a>
+                        }
+        </div>
+                    
+                    
+                    </td>                 
                     <td>@incident.status</td>
                     <td>@incident.affectedward</td>
+
+                @{
+                    var cssClass = "";
+                    string label = "";
+                    DateTime? displayDate = null;
+
+                    var status = incident.status?.ToLowerInvariant();
+
+                    if (status == "open" && incident.datecaptured.HasValue)
+                    {
+                        // Validate the expiry date
+                        if (incident.incidentexpires.HasValue && incident.incidentexpires.Value.Year > 1901)
+                        {
+                            var expiryDate = incident.incidentexpires.Value;
+                            displayDate = expiryDate;
+                            var daysLeft = (expiryDate - DateTime.Today).Days;
+
+                            if (daysLeft > 5)
+                            {
+                                cssClass = "status-green";
+                            }
+                            else if (daysLeft >= 3)
+                            {
+                                cssClass = "status-orange";
+                                label = "⚠ " + daysLeft + " days left";
+                            }
+                            else if (daysLeft >= 1)
+                            {
+                                cssClass = "status-orangered";
+                                label = "⚠ " + daysLeft + " days left";
+                            }
+                            else if (daysLeft == 0)
+                            {
+                                cssClass = "status-red flash";
+                                label = "⏰ Expires today!";
+                            }
+                            else
+                            {
+                                cssClass = "status-expired";
+                                label = "✖ Expired";
+                            }
+                        }
+                        else
+                        {
+                            // Fallback: show datecaptured
+                            displayDate = incident.datecaptured.Value;
+                            label = "";
+                            cssClass = "";
+                        }
+                    }
+                }
+        <td class="@cssClass" title="@label" style="font-size:0.85rem;">
+                    @displayDate?.ToString("yyyy-MM-dd")
+                    <br />
+                    @if (!string.IsNullOrEmpty(label))
+                    {
+                    <span class="label-icon">@label</span>
+                    }
+        </td>
+
+
+
+
+
+
                     <td>
                         <a class="icon" href="@Url.Action("EditIncident", "Form", new { id = incident.qarid, inserthospitalid = incident.hospitalid })"><i class="bi bi-pencil-square"></i></a>
                     </td>
@@ -76,3 +200,63 @@
         }
 
 </table>
+
+
+<script>
+    function toggleRead(link, event) {
+        event.preventDefault(); // 🚫 prevent form submit or navigation
+
+        const box = link.closest('.read-box');
+        const shortText = box.querySelector('.read-text.short');
+        const fullText = box.querySelector('.read-text.full');
+
+        const isExpanded = fullText.style.display === 'inline';
+
+        if (isExpanded) {
+            fullText.style.display = 'none';
+            shortText.style.display = 'inline';
+            link.textContent = 'Read more';
+        } else {
+            fullText.style.display = 'inline';
+            shortText.style.display = 'none';
+            link.textContent = 'Read less';
+        }
+    }
+</script>
+
+
+        <script>
+function filterTable() {
+  var table = document.getElementById("myTable");
+  var tr = table.getElementsByTagName("tr");
+
+  // Get all filter values
+  var filters = [];
+  for (var i = 1; i <= 8; i++) {
+    var input = document.getElementById("myInput" + i);
+    filters[i] = input ? input.value.toUpperCase() : "";
+  }
+
+  // Loop through all rows (skip header row at index 0)
+  for (var i = 1; i < tr.length; i++) {
+    var tds = tr[i].getElementsByTagName("td");
+    var showRow = true;
+
+    // Check each column against corresponding filter
+    for (var col = 1; col <= 8; col++) {
+      if (filters[col] !== "" && tds[col]) {
+        var txtValue = tds[col].textContent || tds[col].innerText;
+        if (txtValue.toUpperCase().indexOf(filters[col]) === -1) {
+          showRow = false;
+          break;
+        }
+      }
+    }
+
+    // Skip header row (i=0) from being hidden
+    if (i > 0) {
+      tr[i].style.display = showRow ? "" : "none";
+    }
+  }
+}
+</script>

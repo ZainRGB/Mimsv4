@@ -268,7 +268,8 @@ namespace Mimsv2.Controllers
             // 4. Redirect by access level
             return accessLevel.ToLower() switch
             {
-                "admin" => RedirectToAction("AdminDashboard", "Home"),
+                //"admin" => RedirectToAction("AdminDashboard", "Home"),
+                "admin" => RedirectToAction("AdminPage", "Chart"),
                 "main" => RedirectToAction("MainDashboard", "Home"),
                 "local" => RedirectToAction("LocalDashboard", "Home"),
                 _ => RedirectToAction("Index", "Home")

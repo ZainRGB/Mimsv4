@@ -7,7 +7,16 @@
 <section class="dash_container">
 
     <div class="dash_item_span3">
+        @if (string.IsNullOrEmpty(Model.inserthospitalid))
+        {
+            <p>All Hospitals</p>
+        }
+        else
+        {
             <h3>@Model.HospitalName</h3>
+        }
+
+      
     </div>
 
     <div class="dash_item_span3">
@@ -22,21 +31,22 @@
     </div>
 
 
-    <a href="" class="dash_anchor">
+   
+    <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="open" class="dash_anchor">
         <div class="dash_item" style="height:120px;">
             <span class="inner_text">Open Incidents</span>
             <span class="inner_items open">@Model.Open</span>
             </div>
     </a>
 
-    <a href="" class="dash_anchor">
+    <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="hold" class="dash_anchor">
         <div class="dash_item" style="height:120px;">
             <span class="inner_text">On Hold Incidents</span>
             <span class="inner_items hold">@Model.OnHold</span>
             </div>
     </a>
 
-    <a href="" class="dash_anchor">
+    <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="closed" class="dash_anchor">
         <div class="dash_item" style="height:120px;">
             <span class="inner_text">Closed Incidents</span>
             <span class="inner_items closed">@Model.Closed</span>
@@ -100,7 +110,29 @@
 
 
 
-    <div class="dash_item_span6">re</div>
+    
+
+    <div class="dash_item_span2">
+        <p class="dash_p">Affected wards most frequently involved in incidents over the past 6 months.</p>
+        <div id="wardsTable" class="mt-4">Loading...</div>
+    </div>
+    <div class="dash_item_span4">
+        <p class="dash_p">
+            This table shows the number of incidents recorded per hospital for the selected date range. It helps identify workload distribution across facilities.
+        </p>
+
+        <div class="card">
+            <div class="card-header">
+                <strong>Incidents Per Hospital</strong>
+            </div>
+            <div class="card-body" id="incidentPerHospitalContainer">
+                Loading...
+            </div>
+        </div>
+
+    </div>
+
+
 
 
     <div class="dash_item_span6">
@@ -120,6 +152,112 @@
 </section>
 
 <!---Monthly Chart--->
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const selectedHospitalId = '@(Model.inserthospitalid ?? "")';
+
+            fetch(`/Chart/GetTopAffectedWards?hospitalid=${selectedHospitalId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("wardsTable");
+
+                    if (!data || data.length === 0) {
+                        container.innerHTML = "<p>No data found for the selected hospital.</p>";
+                        return;
+                    }
+
+                    let tableHtml = `
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Ward</th>
+                                    <th>Total Incidents (6 Months)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.forEach((item, index) => {
+                        tableHtml += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.ward}</td>
+                                <td>${item.count}</td>
+                            </tr>
+                        `;
+                    });
+
+                    tableHtml += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    container.innerHTML = tableHtml;
+                })
+                .catch(error => {
+                    console.error("Error loading top wards:", error);
+                    document.getElementById("wardsTable").innerHTML = "<p>Error loading ward data.</p>";
+                });
+        });
+    </script>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const today = new Date().toISOString().split('T')[0];
+            const startOfYear = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+
+            fetch(`/Chart/GetIncidentCountsPerHospital?startDate=${startOfYear}&endDate=${today}`)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("incidentPerHospitalContainer");
+
+                    if (!data || data.length === 0) {
+                        container.innerHTML = "<p>No data found.</p>";
+                        return;
+                    }
+
+                    let html = `
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Hospital</th>
+                                    <th>Total Incidents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.forEach((item, index) => {
+                        html += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.hospital}</td>
+                                <td>${item.count}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    container.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error("Error fetching incidents per hospital:", error);
+                    document.getElementById("incidentPerHospitalContainer").innerHTML = "<p>Error loading data.</p>";
+                });
+        });
+    </script>
+}
+
+
 <script>
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -331,3 +469,5 @@
 
 
 <!---INCIDENT Chart END--->
+
+

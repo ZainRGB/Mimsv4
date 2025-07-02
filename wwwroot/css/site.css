@@ -142,7 +142,7 @@ body {
 }
 
     .view_tbl th {
-        background-color: grey;
+        background-color: lightgrey;
         padding: 6px;
         color:white;
     }
@@ -226,11 +226,13 @@ body.shrink .side_nav .nav-item .text {
 
 .clr7 {color: rebeccapurple;}
 
-.clr8 {color: peachpuff;}
+.clr8 {color: steelblue;}
 
-.clr9 {color: peachpuff;}
+.clr9 {color: goldenrod;}
 
 .clr10 {color: peachpuff;}
+
+
 
 .icon:hover {
     color: limegreen;
@@ -367,11 +369,11 @@ body.shrink .shrink-btn {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
+    background: rgba(9, 9, 9, 0.35);
     align-items: center;
     justify-content: center;
     z-index: 9999;
+    display:none;
 }
 
 .spinner {
@@ -381,6 +383,7 @@ body.shrink .shrink-btn {
     width: 60px;
     height: 60px;
     animation: spin 0.9s linear infinite;
+
 }
 
 @keyframes spin {
@@ -653,4 +656,72 @@ color:grey;
 .dash_p{
     color:grey;
     font-size:1rem;
+}
+
+
+.read-box {
+    display: inline-block;
+    max-width: 600px;
+    transition: 1s;
+}
+
+.read-toggle {
+    margin-left: 10px;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition:1s;
+    color:green;
+    text-decoration:none;
+    float:right;
+}
+
+.read-toggle:hover{
+    color:orangered;
+}
+
+.tbodysearch {
+    width: 100%;
+    font-size: 0.95rem;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid grey;
+    padding: 6px;
+    background-color:transparent;
+}
+
+    .tbodysearch::placeholder {
+        color: grey;
+        font-weight: 600;
+    }
+
+    .tbodysearch:hover {
+        border-bottom: 2px solid orangered;
+    }
+
+    .tbodysearch:focus {
+        border-bottom: 2px solid limegreen;
+    }
+
+
+
+a.active-link {
+    color: orangered !important;
+    font-weight: 600;
+}
+
+    a.active-link .icon i,
+    a.active-link .text,
+    a.active-link .tooltip-text {
+        color: orangered !important;
+        font-weight: 600;
+    }
+
+    /* Optional: background or border for icon */
+    a.active-link .icon {
+        background-color: rgba(255, 69, 0, 0.1); /* light orangered */
+        border-radius: 8px;
+    }
+.nav-item a:hover {
+    color: #ff7043; /* lighter orange */
 }

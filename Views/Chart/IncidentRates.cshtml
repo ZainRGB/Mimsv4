@@ -1,0 +1,106 @@
+﻿@using System.Globalization
+@model IncidentRateViewModel
+
+
+
+<section class="dash_container">
+
+    <div class="dash_item_span3"><h4>Incident Rates Per Hospital (Monthly + Quarterly)</h4></div>
+    <div class="dash_item_span3">
+
+        <a asp-controller="Chart" asp-action="IncidentTrendTable" class="btn btn-outline-secondary" style="float:right;font.2rem;display:inline;">Break Down of Incident Trends</a>
+        
+    </div>
+
+<div class="dash_item_span6">
+@foreach (var group in Model.HospitalIncidentRates.GroupBy(x => x.HospitalId))
+{
+    
+
+    <table class="table table-bordered table-striped">
+        <thead>
+                <th colspan="21" style="background-color:steelblue;color:white;"><h4>@group.First().HospitalName</h4></th>
+            <tr>
+                <th>Criteria</th>
+                @for (int i = 0; i < 12; i++)
+                {
+                    <th>@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i + 1)</th>
+                }
+                    <th style="color:limegreen;font-weight:600;">Q1</th>
+                    <th style="color:limegreen;font-weight:600;">Q2</th>
+                    <th style="color:limegreen;font-weight:600;">Q3</th>
+                    <th style="color:limegreen;font-weight:600;">Q4</th>
+                <th>Total</th>
+                <th>% of Hospital</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in group)
+            {
+                <tr>
+                    <td>@item.IncidentCriteria</td>
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        <td>@item.MonthlyCounts[i]</td>
+                    }
+                    <td style="color:limegreen;font-weight:500;">@item.Q1</td>
+                            <td style="color:limegreen;font-weight:500;">@item.Q2</td>
+                            <td style="color:limegreen;font-weight:500;">@item.Q3</td>
+                            <td style="color:limegreen;font-weight:500;">@item.Q4</td>
+                    <td style="color:limegreen;font-weight:500;"><strong>@item.TotalIncidents</strong></td>
+                    <td>@item.PercentageOfGroup.ToString("F2")%</td>
+                </tr>
+
+            }
+        </tbody>
+
+    </table>
+    <br />
+}
+
+    </div>
+
+
+
+    <div class="dash_item_span6">
+
+<h2>Group Total: All Hospitals</h2>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Criteria</th>
+            @for (int i = 0; i < 12; i++)
+            {
+                <th>@CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i + 1)</th>
+            }
+                    <th style="color:limegreen;font-weight:600;">Q1</th>
+                     <th style="color:limegreen;font-weight:600;">Q2</th>
+                    <th style="color:limegreen;font-weight:600;">Q3</th>
+                    <th style="color:limegreen;font-weight:600;">Q4</th>
+            <th>Total</th>
+            <th>% of Group</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.GroupIncidentRates)
+        {
+            <tr>
+                <td>@item.IncidentCriteria</td>
+                @for (int i = 0; i < 12; i++)
+                {
+                    <td>@item.MonthlyCounts[i]</td>
+                }
+                        <td style="color:limegreen;font-weight:500;">@item.Q1</td>
+                        <td style="color:limegreen;font-weight:500;">@item.Q2</td>
+                        <td style="color:limegreen;font-weight:500;">@item.Q3</td>
+                        <td style="color:limegreen;font-weight:500;">@item.Q4</td>
+                <td><strong>@item.TotalIncidents</strong></td>
+                <td>@item.PercentageOfGroup.ToString("F2")%</td>
+            </tr>
+        }
+    </tbody>
+</table>
+    </div>
+
+</section>

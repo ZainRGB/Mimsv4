@@ -42,12 +42,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Index">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Register">Register</a>
-                        </li>
+
 
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item" style="display:inline;">
@@ -56,12 +51,21 @@
                                 {
                                     var name = Context.Session.GetString("username") ?? "Guest";
                                     var surname = Context.Session.GetString("surname") ?? "Guest Surname";
-                                    <p style="color:orangered;margin-right:20px;font-weight:500;">Hi @name @surname
+                                    <p style="color:limegreen;margin-right:20px;font-weight:500;">Hi @name @surname
 
                                         <a asp-controller="Login" asp-action="Logout" method="post" id="logoutForm" style="display:inline-block;margin-left:20px;">
                                             <i class="bi bi-box-arrow-left"></i> Logout
                                         </a>
                                     </p>
+                                }
+                                else
+                                {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Index">Login</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Register">Register</a>
+                                </li>
                                 }
 
                             </li>
@@ -88,8 +92,7 @@
     {
        
     }
-
-
+ 
 
     @if (isAuthenticated)
     { 
@@ -103,7 +106,7 @@
                 {
 
                     <div class="nav-item">
-                        <a asp-controller="Home" asp-action="AdminDashboard">
+                        <a asp-controller="Chart" asp-action="AdminPage">
                             <div class="tooltip-container group">
                                 <div class="icon clr1"><i class="bi bi-house-gear-fill"></i></div>
                                 <span class="tooltip-text clr1">
@@ -124,6 +127,50 @@
                                 </span>
                             </div>
                             <span class="text">New Incident</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents">
+                            <div class="tooltip-container group">
+                                <div class="icon clr3"><i class="bi bi-eye"></i></div>
+                                <span class="tooltip-text clr5">
+                                    Incidents
+                                </span>
+                            </div>
+                            <span class="text">Incidents</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="open">
+                            <div class="tooltip-container group">
+                                <div class="icon clr4"><i class="bi bi-bag-check"></i></div>
+                                <span class="tooltip-text clr2">
+                                    Open
+                                </span>
+                            </div>
+                            <span class="text">Open</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="hold">
+                            <div class="tooltip-container group">
+                                <div class="icon clr5"><i class="bi bi-bag"></i></div>
+                                <span class="tooltip-text clr2">
+                                    On Hold
+                                </span>
+                            </div>
+                            <span class="text">On Hold</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="closed">
+                            <div class="tooltip-container group">
+                                <div class="icon clr6"><i class="bi bi-bag-dash"></i></div>
+                                <span class="tooltip-text clr2">
+                                    Closed
+                                </span>
+                            </div>
+                            <span class="text">Closed</span>
                         </a>
                     </div>
 
@@ -180,6 +227,45 @@
                         </a>
                     </div>
 
+
+                    <div class="nav-item">
+                        <a asp-controller="Chart" asp-action="GroupQualityIndicators">
+                            <div class="tooltip-container group">
+                                <div class="icon clr8"><i class="bi bi-app-indicator"></i></div>
+                                <span class="tooltip-text clr8">
+                                    Indicators
+                                </span>
+                            </div>
+                            <span class="text">Indicators</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-item">
+                        <a asp-controller="Chart" asp-action="incidentRates">
+                            <div class="tooltip-container group">
+                                <div class="icon clr7"><i class="bi bi-graph-up-arrow"></i></div>
+                                <span class="tooltip-text clr7">
+                                    Trending Rates
+                                </span>
+                            </div>
+                            <span class="text">Trending Rates</span>
+                        </a>
+                    </div>
+
+
+
+                    <div class="nav-item">
+                        <a asp-controller="Cm" asp-action="Index">
+                            <div class="tooltip-container group">
+                                        <div class="icon clr8"><i class="bi bi-person-up"></i></div>
+                                <span class="tooltip-text clr8">
+                                    Trending
+                                </span>
+                            </div>
+                            <span class="text">Trending</span>
+                        </a>
+                    </div>
+
                 }
                 @* Hospital QA *@
                 else if (accessLevel == "main"){
@@ -207,7 +293,50 @@
                             <span class="text">New Incident</span>
                         </a>
                     </div>
-
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents">
+                            <div class="tooltip-container group">
+                                <div class="icon clr3"><i class="bi bi-eye"></i></div>
+                                <span class="tooltip-text clr5">
+                                    Incidents
+                                </span>
+                            </div>
+                            <span class="text">Incidents</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="open">
+                            <div class="tooltip-container group">
+                                <div class="icon clr4"><i class="bi bi-bag-check"></i></div>
+                                <span class="tooltip-text clr2">
+                                    Open
+                                </span>
+                            </div>
+                            <span class="text">Open</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="hold">
+                            <div class="tooltip-container group">
+                                <div class="icon clr5"><i class="bi bi-bag"></i></div>
+                                <span class="tooltip-text clr2">
+                                    On Hold
+                                </span>
+                            </div>
+                            <span class="text">On Hold</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="closed">
+                            <div class="tooltip-container group">
+                                <div class="icon clr6"><i class="bi bi-bag-dash"></i></div>
+                                <span class="tooltip-text clr2">
+                                    Closed
+                                </span>
+                            </div>
+                            <span class="text">Closed</span>
+                        </a>
+                    </div>
 
                     <div class="nav-item">
                         <a asp-controller="Risk" asp-action="Index">
@@ -318,12 +447,6 @@
                             </div>
                             <span class="text">Closed</span>
                         </a>
-
-
-
-
-
-
                     </div>
 
                     <div class="nav-item">
@@ -526,16 +649,59 @@
 
 
 
-    <script>
+ @*    <script>
         window.addEventListener("load", function () {
             const spinner = document.getElementById("spinner-overlay");
             if (spinner) {
                 spinner.style.display = "none";
             }
         });
+    </script> *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const spinner = document.getElementById('spinner-overlay');
+
+            function showSpinner(e) {
+                const target = e.target.closest('a, button, form');
+
+                // Exclude certain links
+                if (target && (
+                    target.href?.includes('ExportQualityIndicatorsToExcel') ||
+                    target.href?.includes('ExportQualityIndicatorsToPdf') ||
+                    target.href?.includes('read-toggle')
+                )) {
+                    return;
+                }
+
+                if (spinner) spinner.style.display = 'flex';
+            }
+
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', showSpinner);
+            });
+
+            document.querySelectorAll('button, a').forEach(el => {
+                el.addEventListener('click', showSpinner);
+            });
+        });
     </script>
 
 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentPath = window.location.pathname.toLowerCase();
+
+            document.querySelectorAll(".nav-item a").forEach(link => {
+                const linkPath = link.pathname.toLowerCase();
+
+                // Basic match
+                if (currentPath === linkPath || currentPath.startsWith(linkPath)) {
+                    link.classList.add("active-link");
+                }
+            });
+        });
+    </script>
 
 
 </body>

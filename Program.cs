@@ -5,7 +5,9 @@ using Mimsv2.Data;
 using Mimsv2.Models;
 using Mimsv2.Services;
 using Npgsql;
+using QuestPDF;
 
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +47,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddTransient<GroupQualityIndicatorsPdfService>();
 
 
 var app = builder.Build();

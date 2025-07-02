@@ -1,7 +1,9 @@
 ﻿@model List<HospitalAdmissionModel>
 @using System.Text.Json
 
-<h2>Current Admissions Per Hospital</h2>
+
+
+
 @{
     int currentYear = DateTime.Now.Year;
     var years = new List<string> { "All" };
@@ -13,100 +15,16 @@
     int? selectedYear = ViewBag.SelectedYear as int?;
 }
 
-<div class="btn-group mb-3">
-    @for (int i = 0; i < years.Count; i++)
-    {
-        var yrVal = i == 0 ? (int?)null : int.Parse(years[i]);
-        var isActive = (yrVal == selectedYear || (i == 0 && selectedYear == null)) ? "btn-primary" : "btn-outline-primary";
-        var href = yrVal == null
-        ? Url.Action("Index", "Cm", new { month = ViewBag.SelectedMonth })
-        : Url.Action("Index", "Cm", new { month = ViewBag.SelectedMonth, year = yrVal });
-
-        <a href="@href" class="btn @isActive">@years[i]</a>
-    }
-</div>
-
-
 
 @{
     var months = new[] { "All", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
     int? selectedMonth = ViewBag.SelectedMonth as int?;
 }
 
-<div class="btn-group mb-3">
-    @for (int i = 0; i < months.Length; i++)
-    {
-        var isActive = (i == selectedMonth || (i == 0 && selectedMonth == null)) ? "btn-primary" : "btn-outline-primary";
-        var href = i == 0 ? Url.Action("Index", "Cm") : Url.Action("Index", "Cm", new { month = i });
-        <a href="@href" class="btn @isActive">@months[i]</a>
-    }
-</div>
-
-
-
-
-<section class="dash_container">
-    <div class="dash_item_span6">Hospital Adimssions</div>
-
-
-
-</section>
-
-
-
-
-
-
-<table class="table table-bordered">
-
-    <thead>
-        <tr>
-            <th>Hospital</th>
-            <th>Number of Patients</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var count in ViewBag.PatientCounts as List<HospitalCountModel>)
-        {
-            <tr>
-                <td>@count.HospitalName</td>
-                <td>@count.PatientCount</td>
-            </tr>
-        }
-    </tbody>
-
-
-
-</table>
-
-
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Hospital</th>
-            <th>Admissions</th>
-            <th>Patient Incidents</th>
-            <th>Incident Rate (per 1000)</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var row in ViewBag.PatientCounts as List<HospitalCountModel>)
-        {
-            <tr>
-                <td>@row.HospitalName</td>
-                <td>@row.PatientCount</td>
-                <td>@row.IncidentCount</td>
-                <td>@Math.Round(row.IncidentRate, 2)</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<h3 class="mt-4">Hospital Admissions, Incidents & Rate</h3>
-<canvas id="hospitalChart" height="500"></canvas>
-
-
+@{
+    Layout = "_Layout"; // or whatever your layout is
+    var trendData = (List<IncidentTrendModel>)ViewBag.IncidentTrends;
+}
 
 @{
     ViewData["Title"] = "Nurse Trend Chart";
@@ -115,49 +33,128 @@
 
 
 
-<h2>Group Trends</h2>
-<canvas id="nurseTrendChart" height="400"></canvas>
+<section class="dash_container">
+    <div class="dash_item_span6" style="border:none;box-shadow:none;"><h3>Current Admissions Per Hospital</h3></div>
 
-
-
-
-
-@if (ViewBag.IncidentTrends != null)
-{
-    var trends2 = (List<Mimsv2.Models.IncidentTrendModel>)ViewBag.IncidentTrends;
-
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Month</th>
-                <th>Medication Related</th>
-                <th>Pressure Injuries</th>
-                <th>Slip & Falls</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var trend in trends2)
+    <div class="dash_item_span4" style="border:none;box-shadow:none;">
+        <div class="btn-group mb-3">
+            @for (int i = 0; i < months.Length; i++)
             {
-                <tr>
-                    <td>@trend.Month</td>
-                    <td>@trend.MedicationRelated</td>
-                    <td>@trend.PressureInjuries</td>
-                    <td>@trend.SlipFalls</td>
-                </tr>
+                var isActive = (i == selectedMonth || (i == 0 && selectedMonth == null)) ? "btn-primary" : "btn-outline-primary";
+                var href = i == 0 ? Url.Action("Index", "Cm") : Url.Action("Index", "Cm", new { month = i });
+                <a href="@href" class="btn @isActive">@months[i]</a>
             }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No incident trends found.</p>
-}
+        </div>
+    </div>
+
+
+    <div class="dash_item_span2" style="border:none;box-shadow:none;">
+        <div class="btn-group mb-3">
+            @for (int i = 0; i < years.Count; i++)
+            {
+                var yrVal = i == 0 ? (int?)null : int.Parse(years[i]);
+                var isActive = (yrVal == selectedYear || (i == 0 && selectedYear == null)) ? "btn-primary" : "btn-outline-primary";
+                var href = yrVal == null
+                ? Url.Action("Index", "Cm", new { month = ViewBag.SelectedMonth })
+                : Url.Action("Index", "Cm", new { month = ViewBag.SelectedMonth, year = yrVal });
+
+                <a href="@href" class="btn @isActive">@years[i]</a>
+            }
+        </div>
+    </div>
+
+    <div class="dash_item_span4">
+        <h3 class="mt-4">Hospital Admissions, Incidents & Rate</h3>
+        <canvas id="hospitalChart" height="auto"></canvas>
+    </div>
+
+    <div class="dash_item_span2" style="position:relative;">
+        <table class="form_table" style="position:absolute; top:0;left:0;">
+            <thead>
+                <tr><th colspan="5" style="border:none;background-color:white;"><p>Hospital Admissions Live data from Clinic Manager</p></th></tr>
+                <tr>
+                    <th>Hospital</th>
+                    <th>Admissions</th>
+                    <th>Patient Incidents</th>
+                    <th>Incident Rate (per 1000)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in ViewBag.PatientCounts as List<HospitalCountModel>)
+                {
+                    <tr>
+                        <td>@row.HospitalName</td>
+                        <td>@row.PatientCount</td>
+                        <td>@row.IncidentCount</td>
+                        <td>@Math.Round(row.IncidentRate, 1)%</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="dash_item_span2" style="position:relative;">
+
+        @if (ViewBag.IncidentTrends != null)
+        {
+            var trends2 = (List<Mimsv2.Models.IncidentTrendModel>)ViewBag.IncidentTrends;
+
+            <table class="form_table" style="position:absolute; top:0;left:0;">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Medication Related</th>
+                        <th>Pressure Injuries</th>
+                        <th>Slip & Falls</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var trend in trends2)
+                    {
+                        <tr>
+                            <td>@trend.Month</td>
+                            <td>@trend.MedicationRelated</td>
+                            <td>@trend.PressureInjuries</td>
+                            <td>@trend.SlipFalls</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No incident trends found.</p>
+        }
+
+    </div>
+    <div class="dash_item_span4">
+        <h2>Group Trends</h2>
+        <canvas id="nurseTrendChart" height="auto"></canvas>
+    </div>
 
 
 
 
+    <div class="dash_item_span4">
+        <h3 class="mb-4">Incident Counts Per Hospital</h3>
+        <canvas id="incidentChart" height="100"></canvas>
+    </div>
+    <div class="dash_item_span2" style="position:relative;">
 
+        <table class="form_table" id="incidentTable" style="position:absolute; top:0;left:0;">
+            <thead>
+                <tr>
+                    <th>Hospital</th>
+                    <th>Total Incidents</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 
+</section>
 
 
 <script>
@@ -168,12 +165,12 @@ else
     const incidents = data.map(d => d.incidentCount);
     const rates = data.map(d => (d.incidentRate != null ? Math.round(d.incidentRate) : 0));
         const backgroundColors = [
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(153, 102, 255, 0.7)',
-        'rgba(255, 159, 64, 0.7)'
+        'rgba(54, 162, 235, 0.9)',
+        'rgba(255, 99, 132, 0.9)',
+        'rgba(255, 206, 86, 0.9)',
+        'rgba(75, 192, 192, 0.9)',
+        'rgba(153, 102, 255, 0.9)',
+        'rgba(255, 159, 64, 0.9)'
     ];
 
     const ctx = document.getElementById('hospitalChart').getContext('2d');
@@ -197,7 +194,7 @@ else
                 {
                     label: 'Incidents',
                     data: incidents,
-                    backgroundColor: backgroundColors.map(c => c.replace('0.7', '1')), // darker variant
+                    backgroundColor: backgroundColors.map(c => c.replace('0.9', '0.5')), // darker variant
                     datalabels: {
                         color: 'white',
                         anchor: 'center',
@@ -294,55 +291,152 @@ else
 
 
 <script>
-    const nurseData = @Html.Raw(JsonSerializer.Serialize(ViewBag.IncidentTrends ?? new List<Mimsv2.Models.IncidentTrendModel>()));
+    const nurseData = @Html.Raw(JsonSerializer.Serialize(trends));
 
     if (Array.isArray(nurseData) && nurseData.length > 0) {
-        const labels = nurseData.map(x => x.month);
-        const medication = nurseData.map(x => x.medicationRelated);
-        const pressure = nurseData.map(x => x.pressureInjuries);
-        const falls = nurseData.map(x => x.slipFalls);
+        const labels = nurseData.map(x => x.Month);
+        const medication = nurseData.map(x => x.MedicationRelated);
+        const pressure = nurseData.map(x => x.PressureInjuries);
+        const falls = nurseData.map(x => x.SlipFalls);
 
-        new Chart(document.getElementById('nurseTrendChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Medication Related',
-                        data: medication,
-                        backgroundColor: '#2f75b5'
-                    },
-                    {
-                        label: 'Pressure Injuries',
-                        data: pressure,
-                        backgroundColor: '#ed7d31'
-                    },
-                    {
-                        label: 'Slip & Falls',
-                        data: falls,
-                        backgroundColor: '#70ad47'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top'
-                    }
+           new Chart(document.getElementById('nurseTrendChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Medication Related',
+                    data: medication,
+                    backgroundColor: '#2f75b5',
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Incidents'
-                        }
+                {
+                    label: 'Pressure Injuries',
+                    data: pressure,
+                    backgroundColor: '#ed7d31'
+                },
+                {
+                    label: 'Slip & Falls',
+                    data: falls,
+                    backgroundColor: '#70ad47'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                datalabels: {
+                    color: 'white',
+                    anchor: 'end',
+                    align: 'start',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: Math.round // optional: round the number
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Incidents'
                     }
                 }
             }
-        });
+        },
+        plugins: [ChartDataLabels]
+    });
+
     } else {
         console.warn("No trend data available for nurse chart.");
     }
 </script>
+
+
+
+
+
+<script>
+    async function loadIncidentData() {
+        try {
+            const response = await fetch('/Chart/GetIncidentCountsPerHospital');
+            const data = await response.json();
+
+            // Build table
+            const tableBody = document.querySelector('#incidentTable tbody');
+            tableBody.innerHTML = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.hospital}</td><td>${row.count}</td>`;
+                tableBody.appendChild(tr);
+            });
+
+              // Generate a color for each bar
+    function getBarColors(count) {
+        const colors = [
+            '#007bff', '#28a745', '#ffc107', '#dc3545',
+            '#6f42c1', '#20c997', '#fd7e14', '#6610f2',
+            '#17a2b8', '#e83e8c', '#343a40', '#adb5bd'
+        ];
+        // If more hospitals than colors, cycle through
+        return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
+    }
+
+    const labels = data.map(item => item.hospital);
+    const counts = data.map(item => item.count);
+    const barColors = getBarColors(counts.length);
+
+    new Chart(document.getElementById('incidentChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Incident Count',
+                data: counts,
+                backgroundColor: barColors
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Incidents'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                datalabels: {
+                    color: 'white',
+                    anchor: 'end',
+                    align: 'start',
+                    font: {
+                        weight: 'bold',
+                        size: 12
+                    },
+                    formatter: value => value
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+        } catch (error) {
+            console.error('Failed to load incident data:', error);
+        }
+    }
+
+    // Load on page ready
+    document.addEventListener('DOMContentLoaded', loadIncidentData);
+</script>
+
+
+

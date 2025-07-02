@@ -1,0 +1,95 @@
+﻿@model List<Mimsv2.Models.IncidentTrendSummaryModel>
+@{
+    ViewData["Title"] = "Incident Trend Table";
+    var year = ViewBag.Year ?? DateTime.Now.Year;
+    var grouped = Model.GroupBy(x => x.PTE);
+}
+
+
+<section class="dash_container">
+    <div class="dash_item_span3"><h3>Incident Trend Summary - @year</h3></div>
+    <div class="dash_item_span3">
+        <a asp-controller="Chart" asp-action="incidentRates" class="btn btn-outline-primary" style="float:right;font.2rem;display:inline;">Back to Incident Rates</a>
+    </div>
+
+<div class="dash_item_span6">
+<form method="get" asp-controller="Chart" asp-action="IncidentTrendTable" class="mb-3">
+    <label for="year">Select Year:</label>
+    <select name="year" onchange="this.form.submit()" class="form-control" style="width: 200px; display: inline-block">
+        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 2; y--)
+        {
+            <option value="@y" selected="@(y == year)">@y</option>
+        }
+    </select>
+</form>
+
+<table class="table table-bordered table-sm table-striped">
+    <thead class="table-dark">
+        <tr>
+            
+            <th>Type</th>
+            <th>Cat 1</th>
+            <th>Cat 2</th>
+            <th>Jan</th>
+            <th>Feb</th>
+            <th>Mar</th>
+            <th>Q1</th>
+            <th>Apr</th>
+            <th>May</th>
+            <th>Jun</th>
+            <th>Q2</th>
+            <th>Jul</th>
+            <th>Aug</th>
+            <th>Sep</th>
+            <th>Q3</th>
+            <th>Oct</th>
+            <th>Nov</th>
+            <th>Dec</th>
+            <th>Q4</th>
+            <th>Total</th>
+            <th>Goal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var group in grouped)
+        {
+            var pte = group.Key;
+            var rowSpan = group.Count();
+            bool first = true;
+            foreach (var item in group)
+            {
+              
+                    @if (first)
+                    {
+                    <tr><td colspan="22" style="background-color:limegreen;">@pte</td></tr>
+                        first = false;
+                    }
+                <tr>
+                    <td>@item.IncidentType</td>
+                    <td>@item.IncTypesCat1</td>
+                    <td>@item.IncTypesCat2</td>
+                    <td>@item.Jan</td>
+                    <td>@item.Feb</td>
+                    <td>@item.Mar</td>
+                    <td style="color:limegreen; font-weight:500;">@item.Q1</td>
+                    <td>@item.Apr</td>
+                    <td>@item.May</td>
+                    <td>@item.Jun</td>
+                    <td style="color:limegreen; font-weight:500;">@item.Q2</td>
+                    <td>@item.Jul</td>
+                    <td>@item.Aug</td>
+                    <td>@item.Sep</td>
+                    <td style="color:limegreen; font-weight:500;">@item.Q3</td>
+                    <td>@item.Oct</td>
+                    <td>@item.Nov</td>
+                    <td>@item.Dec</td>
+                    <td style="color:limegreen;font-weight:500;">@item.Q4</td>
+                    <td class="fw-bold">@item.Total</td>
+                    <td class="text-primary">@item.Goal</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+    </div>
+</section>

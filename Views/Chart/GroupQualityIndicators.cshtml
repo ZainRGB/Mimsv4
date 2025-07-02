@@ -1,0 +1,127 @@
+﻿@model List<Mimsv2.Models.GroupQualityIndicatorModel>
+@{
+    ViewData["Title"] = "Group Quality Indicators";
+    var grouped = Model.GroupBy(m => m.Hospital);
+}
+
+
+
+@{
+
+    var from = Context.Request.Query["from"];
+    var to = Context.Request.Query["to"];
+}
+
+
+<section class="dash_container">
+
+  
+
+    <div class="dash_item_span4" style="border:none;box-shadow:none;"><h3 class="mb-4">Group Quality Indicators</h3></div>
+    <div class="dash_item_span2" style="text-align:right;border:none;box-shadow:none;">
+        <a class="btn btn-success mb-3"
+           href="@Url.Action("ExportQualityIndicatorsToExcel", "Chart", new {
+       from = Context.Request.Query["from"],
+       to = Context.Request.Query["to"]
+   })">
+            <i class="bi bi-arrow-bar-down"></i> Export to Excel
+        </a>
+
+
+        <a class="btn btn-danger mb-3 ms-2"
+           href="@Url.Action("ExportQualityIndicatorsToPdf", "Chart", new {
+       from = Context.Request.Query["from"],
+       to = Context.Request.Query["to"]
+   })">
+            <i class="bi bi-arrow-bar-down"></i> Export to PDF
+        </a>
+    </div>
+
+
+    <div class="dash_item_span4">
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label for="from" class="form-label">From</label>
+                <input type="date" name="from" id="from" class="form-control" value="@from" />
+            </div>
+            <div class="col-md-3">
+                <label for="to" class="form-label">To</label>
+                <input type="date" name="to" id="to" class="form-control" value="@to" />
+            </div>
+            <div class="col-md-3 align-self-end">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="dash_item_span2">
+        <label for="to" class="form-label">Range</label>
+        <select onchange="applyQuickRange(this.value)" class="form-control">
+            <option value="">Quick Ranges</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+        </select>
+    </div>
+
+</section>
+
+
+<br />
+
+@foreach (var group in grouped)
+{
+    <div class="mb-5">
+        <h4 class="text-primary">@group.Key</h4>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 30px;">Nr.</th>
+                    <th>Incident Category & Description</th>
+                    <th style="width: 100px;">Severity</th>
+                    <th style="width: 150px;">Department</th>
+                    <th>Corrective Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    foreach (var item in group)
+                    {
+                        <tr>
+                            <td>@(i++)</td>
+                            <td>@item.Summary</td>
+                            <td>
+                                @if (item.Severity?.ToLower() == "major")
+                                {
+                                    <span class="badge bg-danger">@item.Severity</span>
+                                }
+                                else if (item.Severity?.ToLower() == "moderate")
+                                {
+                                    <span class="badge bg-warning text-dark">@item.Severity</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">@item.Severity</span>
+                                }
+                            </td>
+                            <td>@item.Department</td>
+                            <td>@item.CorrectiveActions</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+
+<script>
+    function applyQuickRange(days) {
+        const to = new Date().toISOString().split('T')[0];
+        const from = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
+        window.location.href = `?from=${from}&to=${to}`;
+    }
+</script>
