@@ -3,10 +3,73 @@
     ViewData["Title"] = "Local Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Local Dash</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@{
+    if (Model == null)
+    {
+        <p>Model is null!</p>
+    }
+    else
+    {
+        <p>Open incidents: @Model.Open</p>
+    }
+}
+<div>
+    Open: @Model?.Open ?? 0 <br />
+    On Hold: @Model?.OnHold ?? 0 <br />
+    Closed: @Model?.Closed ?? 0 <br />
 </div>
+<p>Open Incidents Count: @Model?.Open</p>
+<section class="dash_container">
+
+
+    <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="open" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Open Incidents</span>
+            <span class="inner_items open"></span>
+        </div>
+    </a>
+
+    <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="hold" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">On Hold Incidents</span>
+            <span class="inner_items hold">2</span>
+        </div>
+    </a>
+
+    <a asp-controller="Form" asp-action="ViewAllIncidents" asp-route-status="closed" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Closed Incidents</span>
+            <span class="inner_items closed">3</span>
+        </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Open More than 5 Days</span>
+            <span class="inner_items five">4</span>
+        </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Open More than 10 Days</span>
+            <span class="inner_items ten">5</span>
+        </div>
+    </a>
+
+    <a href="" class="dash_anchor">
+        <div class="dash_item" style="height:120px;">
+            <span class="inner_text">Total Incidents</span>
+            <span class="inner_items total">6</span>
+        </div>
+    </a>
+
+
+
+
+    <div class="dash_item_span6"></div>
+
+    </section>
 
 
 

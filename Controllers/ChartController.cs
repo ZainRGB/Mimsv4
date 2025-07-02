@@ -26,64 +26,104 @@ namespace Mimsv2.Controllers
 
             model.inserthospitalid = inserthospitalid;
 
+            var accessLevel = HttpContext.Session.GetString("accessLevel")?.ToLower() ?? "local";
+            var loginHospitalId = HttpContext.Session.GetString("loginhospitalid");
+            var loginname = HttpContext.Session.GetString("loginname");
+
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
 
-            // Load hospitals for dropdown
-            var hospitalCmd = new NpgsqlCommand("SELECT hospitalid, hospital FROM tblhospitals ORDER BY hospital", conn);
-            using var readerHosp = await hospitalCmd.ExecuteReaderAsync();
-            while (await readerHosp.ReadAsync())
+            // Load hospitals dropdown only if admin, else empty list (or just current hospital for main/local)
+            if (accessLevel == "admin")
             {
-                model.Hospitals.Add(new SelectListItem
+                var hospitalCmd = new NpgsqlCommand("SELECT hospitalid, hospital FROM tblhospitals ORDER BY hospital", conn);
+                using var readerHosp = await hospitalCmd.ExecuteReaderAsync();
+                while (await readerHosp.ReadAsync())
                 {
-                    Value = readerHosp["hospitalid"].ToString(),
-                    Text = readerHosp["hospital"].ToString(),
-                    Selected = (readerHosp["hospitalid"].ToString() == inserthospitalid)
-                });
+                    model.Hospitals.Add(new SelectListItem
+                    {
+                        Value = readerHosp["hospitalid"].ToString(),
+                        Text = readerHosp["hospital"].ToString(),
+                        Selected = (readerHosp["hospitalid"].ToString() == inserthospitalid)
+                    });
+                }
+                readerHosp.Close();
             }
-            readerHosp.Close();
+            else if (accessLevel == "main" || accessLevel == "local")
+            {
+                // For main/local just add the login hospital as the only option
+                if (!string.IsNullOrEmpty(loginHospitalId))
+                {
+                    var nameCmd = new NpgsqlCommand("SELECT hospital FROM tblhospitals WHERE hospitalid = @id", conn);
+                    nameCmd.Parameters.AddWithValue("@id", loginHospitalId);
+                    var result = await nameCmd.ExecuteScalarAsync();
 
-            // Build query
-            string sql = @"
+                    model.Hospitals.Add(new SelectListItem
+                    {
+                        Value = loginHospitalId,
+                        Text = result?.ToString() ?? "Unknown",
+                        Selected = true
+                    });
+                    model.SelectedHospitalId = loginHospitalId;
+                }
+            }
+
+            // Build the filtering clause based on access level
+            string filterClause = "";
+            var cmd = new NpgsqlCommand();
+            cmd.Connection = conn;
+
+            if (accessLevel == "admin")
+            {
+                // Admin: filter by inserthospitalid if given, else all hospitals
+                if (!string.IsNullOrEmpty(inserthospitalid))
+                {
+                    filterClause = " AND hospitalid = @inserthospitalid";
+                    cmd.Parameters.AddWithValue("@inserthospitalid", inserthospitalid);
+                }
+            }
+            else if (accessLevel == "main")
+            {
+                // Main: only incidents for loginHospitalId
+                filterClause = " AND hospitalid = @loginhospitalid";
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+            }
+            else
+            {
+                // Local: incidents for loginHospitalId AND requester = loginname
+                filterClause = " AND hospitalid = @loginhospitalid AND requester = @requester";
+                cmd.Parameters.AddWithValue("@loginhospitalid", loginHospitalId ?? "");
+                cmd.Parameters.AddWithValue("@requester", loginname ?? "");
+            }
+
+            string sql = $@"
         SELECT
             COUNT(*) FILTER (
-                WHERE status = 'open' AND active = 'Y' {0} 
+                WHERE status = 'open' AND active = 'Y' {filterClause}
             ) AS open_count,
             COUNT(*) FILTER (
-                WHERE status = 'hold' AND active = 'Y' {0}
+                WHERE status = 'hold' AND active = 'Y' {filterClause}
             ) AS onhold_count,
             COUNT(*) FILTER (
-                WHERE status = 'closed' AND active = 'Y' {0}
+                WHERE status = 'closed' AND active = 'Y' {filterClause}
             ) AS closed_count,
             COUNT(*) FILTER (
                 WHERE status = 'open' AND active = 'Y'
                 AND datecaptured <= CURRENT_DATE - INTERVAL '5 days'
-                {0}
+                {filterClause}
             ) AS open_5days,
             COUNT(*) FILTER (
                 WHERE status = 'open' AND active = 'Y'
                 AND datecaptured <= CURRENT_DATE - INTERVAL '10 days'
-                {0}
+                {filterClause}
             ) AS open_10days,
             COUNT(*) FILTER (
-                WHERE active = 'Y' {0}
+                WHERE active = 'Y' {filterClause}
             ) AS total_incidents
-        FROM tblincident;";
+        FROM tblincident;
+    ";
 
-            string hospitalClause = string.IsNullOrEmpty(inserthospitalid) ? "" : $" AND hospitalid = @inserthospitalid";
-            sql = string.Format(sql, hospitalClause);
-
-            using var cmd = new NpgsqlCommand(sql, conn);
-            if (!string.IsNullOrEmpty(inserthospitalid))
-            {
-                cmd.Parameters.AddWithValue("@inserthospitalid", inserthospitalid);
-
-                var nameCmd = new NpgsqlCommand("SELECT hospital FROM tblhospitals WHERE hospitalid = @id", conn);
-                nameCmd.Parameters.AddWithValue("@id", inserthospitalid);
-                var result = await nameCmd.ExecuteScalarAsync();
-                model.HospitalName = result?.ToString() ?? inserthospitalid;
-
-            }
+            cmd.CommandText = sql;
 
             using var reader = await cmd.ExecuteReaderAsync();
             if (reader.Read())
@@ -98,6 +138,7 @@ namespace Mimsv2.Controllers
 
             return View("AdminPage", model);
         }
+
 
 
         public IActionResult MainPage()
