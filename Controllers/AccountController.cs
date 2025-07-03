@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Mimsv2.Services;
+using Mimsv2.Models;
 
 namespace Mimsv2.Controllers
 {
@@ -29,12 +30,11 @@ namespace Mimsv2.Controllers
 
         // POST: Handle email submission
         [HttpPost]
-        public async Task<IActionResult> ForgotPassword(string email)
+        public async Task<IActionResult> ForgotPassword(AccountModel model)
         {
-            ViewBag.Message = "If the email is registered, you will receive a password reset link.";
-           
-            if (string.IsNullOrEmpty(email))
+            if (string.IsNullOrWhiteSpace(model.Email))
             {
+                ViewBag.Message = "Please enter your email address.";
                 return View();
             }
 
@@ -43,39 +43,45 @@ namespace Mimsv2.Controllers
 
             string getUserSql = "SELECT id FROM tblusers WHERE LOWER(email) = LOWER(@Email)";
             using var getUserCmd = new NpgsqlCommand(getUserSql, _conn);
-            getUserCmd.Parameters.AddWithValue("Email", email);
+            getUserCmd.Parameters.AddWithValue("Email", model.Email);
 
             var userIdObj = await getUserCmd.ExecuteScalarAsync();
 
-
             if (userIdObj == null)
             {
+                ViewBag.Message = "The email address you entered was not found. Please check and try again.";
                 return View();
             }
 
             int userId = Convert.ToInt32(userIdObj);
-
-            // Generate secure token
             string token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
-            // Save token
-            string insertTokenSql = @"INSERT INTO password_reset_tokens (user_id, token, expires_at, used)
-        VALUES (@userId, @token, @expiresAt, FALSE)";
-            using var insertTokenCmd = new NpgsqlCommand(insertTokenSql, _conn);
-            insertTokenCmd.Parameters.AddWithValue("userId", userId);
-            insertTokenCmd.Parameters.AddWithValue("token", token);
-            insertTokenCmd.Parameters.AddWithValue("expiresAt", DateTime.UtcNow.AddHours(1));
-            await insertTokenCmd.ExecuteNonQueryAsync();
+            try
+            {
+                string insertTokenSql = @"
+            INSERT INTO password_reset_tokens (user_id, token, expires_at, used)
+            VALUES (@userId, @token, @expiresAt, FALSE)";
+                using var insertTokenCmd = new NpgsqlCommand(insertTokenSql, _conn);
+                insertTokenCmd.Parameters.AddWithValue("userId", userId);
+                insertTokenCmd.Parameters.AddWithValue("token", token);
+                insertTokenCmd.Parameters.AddWithValue("expiresAt", DateTime.UtcNow.AddHours(1));
+                await insertTokenCmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Message = "Error while generating reset link: " + ex.Message;
+                return View();
+            }
 
-            // Build reset URL
             string resetUrl = Url.Action("ResetPassword", "Account", new { token = token }, Request.Scheme);
+            await _emailService.SendPasswordResetEmail(model.Email, resetUrl);
 
-            // Send email (implement your EmailService accordingly)
-            await _emailService.SendPasswordResetEmail(email, resetUrl);
-
-
+            ViewBag.Message = "We've sent you a password reset link. Please check your inbox and follow the instructions to reset your password.";
             return View();
         }
+
+
+
 
         // GET: Show reset password form
         [HttpGet]

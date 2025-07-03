@@ -56,19 +56,37 @@ body {
     background-color: whitesmoke;
     border-radius: 6px;
     padding: 1.2rem;
-    box-shadow: 0px 5px 10px rgba(160, 159, 159, 0.4);
+    /* box-shadow: 0px 5px 10px rgba(160, 159, 159, 0.4);*/
+    box-shadow:
+    /* Top shadow: Red */
+    0 -10px 25px -8px rgba(255, 0, 0, 0.4),
+    /* Right shadow: Green */
+    15px 0 25px -8px rgba(0, 255, 0, 0.4),
+    /* Bottom shadow: Blue */
+    0 15px 25px -8px rgba(0, 0, 255, 0.4),
+    /* Left shadow: Yellow */
+    -15px 0 25px -8px rgba(255, 255, 0, 0.4);
 }
 
 .register_container {
-    display: flex;
-    flex-direction: column;
-    margin: auto;
+    margin-top:50px;
+    margin-left: auto;
+    margin-right: auto;
     width: 550px;
     height: auto;
     background-color: whitesmoke;
     border-radius: 6px;
     padding: 1.2rem;
-    box-shadow: 0px 5px 10px rgba(160, 159, 159, 0.4);
+    /* box-shadow: 0px 5px 10px rgba(160, 159, 159, 0.4);*/
+    box-shadow:
+    /* Top shadow: Red */
+    0 -10px 25px -8px rgba(255, 0, 0, 0.4),
+    /* Right shadow: Green */
+    15px 0 25px -8px rgba(0, 255, 0, 0.4),
+    /* Bottom shadow: Blue */
+    0 15px 25px -8px rgba(0, 0, 255, 0.4),
+    /* Left shadow: Yellow */
+    -15px 0 25px -8px rgba(255, 255, 0, 0.4);
 }
 
 .login_label {
@@ -206,10 +224,10 @@ body.shrink .side_nav .nav-item .text {
     font-size: 1.6rem;
     display: inline-block;
     cursor: pointer;
-    padding: 0.4rem;
-    border-radius: 0.5rem;
+    padding: 0.3rem 0.3rem 0.3rem 0.5rem;
+    border-radius: .5rem;
     transition: all 0.3s ease;
-    letter-spacing: 0.3rem
+    letter-spacing: 0.3rem;
 }
 
 .clr1 {color:dodgerblue;}
@@ -236,6 +254,7 @@ body.shrink .side_nav .nav-item .text {
 
 .icon:hover {
     color: limegreen;
+
 }
 
 .tooltip-container {
@@ -422,7 +441,7 @@ body.shrink .shrink-btn {
 .welcome_icons{
  
     position:fixed;
-    top:100px;
+    bottom:50px;
     right:50px;
     word-spacing:10px;
 }
@@ -431,13 +450,14 @@ body.shrink .shrink-btn {
         display: inline;
         color: steelblue !important;
         font-size: 1.2rem;
-        font-weight:500;
+        font-weight:400;
         transition:1s;
         text-decoration:none;
     }
 
         .welcome_icons a:hover {
             color: limegreen !important;
+     
         }
 
 .form_grid {
@@ -706,21 +726,29 @@ color:grey;
 
 
 a.active-link {
-    color: orangered !important;
-    font-weight: 600;
+    color: dodgerblue !important;
+    font-weight: 500;
 }
 
     a.active-link .icon i,
     a.active-link .text,
     a.active-link .tooltip-text {
-        color: orangered !important;
-        font-weight: 600;
+        color: dodgerblue !important;
+        font-weight: 500;
     }
 
     /* Optional: background or border for icon */
     a.active-link .icon {
-        background-color: rgba(255, 69, 0, 0.1); /* light orangered */
-        border-radius: 8px;
+
+        box-shadow:
+        /* Top shadow: Red */
+        0 -10px 25px -8px rgba(255, 0, 0, 0.4),
+        /* Right shadow: Green */
+        15px 0 25px -8px rgba(0, 255, 0, 0.4),
+        /* Bottom shadow: Blue */
+        0 15px 25px -8px rgba(0, 0, 255, 0.4),
+        /* Left shadow: Yellow */
+        -15px 0 25px -8px rgba(255, 255, 0, 0.4);
     }
 .nav-item a:hover {
     color: #ff7043; /* lighter orange */

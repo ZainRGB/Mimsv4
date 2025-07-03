@@ -4,9 +4,9 @@
 }
 @model Mimsv2.Models.LoginModel
 
-<main>
 
-<section class="login_container" style="margin-top:0;">
+
+<section class="login_container" style="margin-top:20px;">
     <img src="/images/mimsv2.png" class="mims_logo" />
             <form asp-action="LoginVerify" asp-controller="Login" method="post">
             @Html.AntiForgeryToken()
@@ -30,7 +30,7 @@
     </div>
 
 </section>
-</main>
+
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

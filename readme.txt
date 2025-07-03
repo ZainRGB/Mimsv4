@@ -59,3 +59,13 @@ SET rm = 'local'
 WHERE rm IS NULL 
    OR rm = '' 
    OR rm = 'message';
+
+   //create for forgot login tokens
+   CREATE TABLE password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

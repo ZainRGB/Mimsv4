@@ -32,7 +32,7 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 sticky-top" >
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="/images/logotrans.png" class="melo_logo" alt="Logo" /></a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <button class="navbar-toggler" type="button" data-no-spinner="true" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -67,6 +67,9 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Register">Register</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="ForgotPassword">Forgot Password</a>
                                 </li>
                                 }
 
@@ -272,7 +275,7 @@
                 @* Hospital QA *@
                 else if (accessLevel == "main"){
                     <div class="nav-item">
-                        <a asp-controller="Home" asp-action="MainDashboard">
+                        <a asp-controller="Chart" asp-action="AdminPage">
                             <div class="tooltip-container group">
                                 <div class="icon clr1"><i class="bi bi-house-gear-fill"></i></div>
                                 <span class="tooltip-text clr1">
@@ -381,7 +384,7 @@
                 }else{
 
                     <div class="nav-item">
-                        <a asp-controller="Home" asp-action="LocalDashboard">
+                        <a asp-controller="Chart" asp-action="AdminPage">
                             <div class="tooltip-container group">
                                 <div class="icon clr1"><i class="bi bi-house-gear-fill"></i></div>
                                 <span class="tooltip-text clr1">
@@ -659,64 +662,38 @@
             }
         });
     </script> *@
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // ✅ Global skip for this form page
-            if (window.location.pathname.includes("/Form/IncidentForm")) {
-                return; // Skip all spinner logic
-            }
+    function showSpinner(e) {
+    const target = e.target.closest('a, button, form');
 
-            const spinner = document.getElementById('spinner-overlay');
+    // ✅ Skip if element has the data-no-spinner attribute
+    if (target?.hasAttribute('data-no-spinner')) {
+    return;
+    }
 
-            function showSpinner(e) {
-                const target = e.target.closest('a, button, form');
+    // ✅ Skip submit buttons (already handled on form submit)
+    if (target?.tagName === 'BUTTON' && target.type === 'submit') {
+    return;
+    }
 
-                if (target?.tagName === 'BUTTON' && target.type === 'submit') {
-                    return;
-                }
+    // ✅ Additional exclusions
+    if (target && (
+    target.href?.includes('ExportQualityIndicatorsToExcel') ||
+    target.href?.includes('ExportQualityIndicatorsToPdf') ||
+    target.href?.includes('read-toggle') ||
+    target.classList.contains('btn-close') ||
+    target.getAttribute('data-bs-dismiss') === 'modal' ||
+    target.classList.contains('navbar-toggler') || // Optional now
+    target.closest('#similarIncidentsModal')
+    )) {
+    return;
+    }
 
-                if (target && (
-                    target.href?.includes('ExportQualityIndicatorsToExcel') ||
-                    target.href?.includes('ExportQualityIndicatorsToPdf') ||
-                    target.href?.includes('read-toggle') ||
-                    target.classList.contains('btn-close') ||
-                    target.getAttribute('data-bs-dismiss') === 'modal' ||
-                    target.closest('#similarIncidentsModal')
-                )) {
-                    return;
-                }
-
-                if (spinner) spinner.style.display = 'flex';
-            }
-
-            // ✅ Spinner only runs on *valid* forms
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    if (!form.checkValidity()) {
-                        form.classList.add('was-validated');
-                        return;
-                    }
-                    if (spinner) spinner.style.display = 'flex';
-                });
-            });
-
-            document.querySelectorAll('button, a').forEach(el => {
-                el.addEventListener('click', showSpinner);
-            });
-
-            document.addEventListener('hidden.bs.modal', () => {
-                if (spinner) spinner.style.display = 'none';
-            });
-
-            window.addEventListener('load', () => {
-                if (spinner) spinner.style.display = 'none';
-            });
-        });
+    // ✅ Show spinner if none of the above match
+    if (spinner) spinner.style.display = 'flex';
+    }
     </script>
-
-
-
-
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {

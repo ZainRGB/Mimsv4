@@ -4,7 +4,7 @@
     ViewData["Title"] = "Mims Register Page";
 }
 
-<main>
+
     <section class="register_container">
         <img src="/images/mimsnew.png" class="mims_logo" />
 
@@ -74,13 +74,14 @@
 
             <button type="submit" class="form_btn">Submit</button>
         </form>
-
+        <br />
         <div class="register">
+
             <a asp-action="Index" asp-controller="Login">Login Here</a>
             <a asp-area="" asp-controller="Account" asp-action="ForgotPassword">Forgot Password</a>
         </div>
     </section>
-</main>
+
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

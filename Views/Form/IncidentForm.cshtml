@@ -439,7 +439,7 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
         }
 
         // Attach event listeners
-        ["ptenumberInput", "ptenameInput", "ptesurnameInput", "descriptionInput"].forEach(id => {
+        ["ptenumberInput", "descriptionInput"].forEach(id => {
             const input = document.getElementById(id);
             if (input) {
                 input.addEventListener("blur", () => {
