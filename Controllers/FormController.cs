@@ -1891,5 +1891,65 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
             return RedirectToAction("ViewAllIncidents"); // or wherever you list incidents
         }
 
+        //check similar incidents
+        [HttpGet]
+        public async Task<IActionResult> CheckSimilarIncidents(string ptenumber, string? description)
+        {
+            var results = new List<object>();
+
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            await conn.OpenAsync();
+
+            var sql = @"
+        SELECT qarid, incidentdate, incidenttype, description, ptenumber 
+        FROM tblincident 
+        WHERE active = 'Y'
+          AND incidentdate >= NOW() - INTERVAL '6 months'
+          AND (
+            LOWER(ptenumber) = LOWER(@ptenumber)
+          )";
+
+            var keywords = new List<string>();
+            if (!string.IsNullOrEmpty(description))
+            {
+                keywords = description
+                    .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+                    .Where(w => w.Length > 3)
+                    .Take(5)
+                    .ToList();
+
+                if (keywords.Count > 0)
+                {
+                    var keywordConditions = string.Join(" OR ", keywords.Select((k, i) => $"LOWER(description) LIKE LOWER(@kw{i})"));
+                    sql += $" OR ({keywordConditions})";
+                }
+            }
+
+            using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("ptenumber", ptenumber ?? "");
+
+            for (int i = 0; i < keywords.Count; i++)
+            {
+                cmd.Parameters.AddWithValue($"kw{i}", $"%{keywords[i]}%");
+            }
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                results.Add(new
+                {
+                    qarid = reader["qarid"],
+                    date = ((DateTime)reader["incidentdate"]).ToString("yyyy-MM-dd"),
+                    type = reader["incidenttype"].ToString(),
+                    desc = reader["description"].ToString(),
+                    ptenum = reader["ptenumber"].ToString()
+                });
+            }
+
+            return Json(results);
+        }
+
+        //check similar incidents
+
     }
 }

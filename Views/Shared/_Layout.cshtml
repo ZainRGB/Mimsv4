@@ -20,6 +20,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 <body>
     <div id="spinner-overlay">
@@ -659,16 +661,27 @@
     </script> *@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ✅ Global skip for this form page
+            if (window.location.pathname.includes("/Form/IncidentForm")) {
+                return; // Skip all spinner logic
+            }
+
             const spinner = document.getElementById('spinner-overlay');
 
             function showSpinner(e) {
                 const target = e.target.closest('a, button, form');
 
-                // Exclude certain links
+                if (target?.tagName === 'BUTTON' && target.type === 'submit') {
+                    return;
+                }
+
                 if (target && (
                     target.href?.includes('ExportQualityIndicatorsToExcel') ||
                     target.href?.includes('ExportQualityIndicatorsToPdf') ||
-                    target.href?.includes('read-toggle')
+                    target.href?.includes('read-toggle') ||
+                    target.classList.contains('btn-close') ||
+                    target.getAttribute('data-bs-dismiss') === 'modal' ||
+                    target.closest('#similarIncidentsModal')
                 )) {
                     return;
                 }
@@ -676,15 +689,32 @@
                 if (spinner) spinner.style.display = 'flex';
             }
 
+            // ✅ Spinner only runs on *valid* forms
             document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', showSpinner);
+                form.addEventListener('submit', function (e) {
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
+                        return;
+                    }
+                    if (spinner) spinner.style.display = 'flex';
+                });
             });
 
             document.querySelectorAll('button, a').forEach(el => {
                 el.addEventListener('click', showSpinner);
             });
+
+            document.addEventListener('hidden.bs.modal', () => {
+                if (spinner) spinner.style.display = 'none';
+            });
+
+            window.addEventListener('load', () => {
+                if (spinner) spinner.style.display = 'none';
+            });
         });
     </script>
+
+
 
 
 

@@ -328,7 +328,7 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 
         <div class="form_grid_item_span2">
             <label>Short Initial Description</label><br>
-            <textarea asp-for="description" class="form_textarea"></textarea>
+            <textarea asp-for="description" class="form_textarea" id="descriptionInput"></textarea>
         </div>
 
         <div class="form_grid_item_span2" style="padding-left:20px;font-size:1rem;">
@@ -414,7 +414,77 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 </form>
 
 
+<!--Modal to check--->
+<div class="modal fade" id="similarIncidentsModal" tabindex="-1" aria-labelledby="similarIncidentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="similarIncidentsModalLabel">⚠️ Similar Incidents Found in the last 6 months</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-incident-body">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+</div>
 
+<script>
+    let incidentModalInstance;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modalEl = document.getElementById("similarIncidentsModal");
+        if (modalEl) {
+            incidentModalInstance = new bootstrap.Modal(modalEl);
+        }
+
+        // Attach event listeners
+        ["ptenumberInput", "ptenameInput", "ptesurnameInput", "descriptionInput"].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener("blur", () => {
+                    checkSimilarIncidents();
+                });
+            }
+        });
+    });
+
+    async function checkSimilarIncidents() {
+        const data = {
+            ptenumber: document.getElementById("ptenumberInput")?.value || "",
+            description: document.getElementById("descriptionInput")?.value || ""
+        };
+
+        const query = new URLSearchParams(data).toString();
+        const res = await fetch(`/Form/CheckSimilarIncidents?${query}`);
+        const results = await res.json();
+
+        if (results.length > 0) {
+            let html = "";
+            results.forEach(r => {
+                html += `
+                    <div class="mb-3">
+                        <strong>PTE:</strong> ${r.ptenum}<br>
+                        <strong>Date:</strong> ${r.date}<br>
+                        <strong>Type:</strong> ${r.type}<br>
+                        <strong>Description:</strong> ${r.desc}<br>
+                        <strong>QARID:</strong> ${r.qarid}
+                        <hr>
+                    </div>
+                `;
+            });
+
+            document.getElementById("modal-incident-body").innerHTML = html;
+
+            // ✅ Just show the already-initialized modal
+            incidentModalInstance?.show();
+        }
+    }
+</script>
+
+
+
+<!--Modal to check--->
 
 
 @* <!---SECTION A---> *@
