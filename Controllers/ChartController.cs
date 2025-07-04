@@ -638,12 +638,46 @@ public async Task<IActionResult> GetIncidentTypeDistribution(string? hospitalid,
 
         //COUNT Affectedward end
         //COUNT YTD All hospitals
+        //    [HttpGet]
+        //    public async Task<IActionResult> GetIncidentCountsPerHospital(DateTime? startDate, DateTime? endDate)
+        //    {
+        //        var results = new List<object>();
+        //        var start = startDate ?? new DateTime(DateTime.Today.Year, 1, 1);
+        //        var end = endDate ?? DateTime.Today;
+
+        //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //        await conn.OpenAsync();
+
+        //        string sql = @"
+        //    SELECT h.hospital, COUNT(i.*) AS totalincidents
+        //    FROM tblincident i
+        //    JOIN tblhospitals h ON i.hospitalid = h.hospitalid
+        //    WHERE i.active = 'Y'
+        //      AND i.datecaptured BETWEEN @startDate AND @endDate
+        //    GROUP BY h.hospital
+        //    ORDER BY h.hospital DESC;
+        //";
+
+        //        using var cmd = new NpgsqlCommand(sql, conn);
+        //        cmd.Parameters.AddWithValue("@startDate", start);
+        //        cmd.Parameters.AddWithValue("@endDate", end);
+
+        //        using var reader = await cmd.ExecuteReaderAsync();
+        //        while (await reader.ReadAsync())
+        //        {
+        //            results.Add(new
+        //            {
+        //                hospital = reader["hospital"].ToString(),
+        //                count = Convert.ToInt32(reader["totalincidents"])
+        //            });
+        //        }
+
+        //        return Json(results);
+        //    }
         [HttpGet]
-        public async Task<IActionResult> GetIncidentCountsPerHospital(DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> GetIncidentCountsPerHospital(int? year)
         {
             var results = new List<object>();
-            var start = startDate ?? new DateTime(DateTime.Today.Year, 1, 1);
-            var end = endDate ?? DateTime.Today;
 
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await conn.OpenAsync();
@@ -653,14 +687,24 @@ public async Task<IActionResult> GetIncidentTypeDistribution(string? hospitalid,
         FROM tblincident i
         JOIN tblhospitals h ON i.hospitalid = h.hospitalid
         WHERE i.active = 'Y'
-          AND i.datecaptured BETWEEN @startDate AND @endDate
+    ";
+
+            if (year.HasValue)
+            {
+                sql += " AND EXTRACT(YEAR FROM i.datecaptured) = @year ";
+            }
+
+            sql += @"
         GROUP BY h.hospital
         ORDER BY h.hospital DESC;
     ";
 
             using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@startDate", start);
-            cmd.Parameters.AddWithValue("@endDate", end);
+
+            if (year.HasValue)
+            {
+                cmd.Parameters.AddWithValue("@year", year.Value);
+            }
 
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())

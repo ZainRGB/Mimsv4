@@ -330,70 +330,6 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         //SECTION B END
 
 
-
-        //SECTION C
-        //[HttpGet]
-        //public async Task<IActionResult> GetUsers(int hospitalId)
-        //{
-        //    try
-        //    {
-        //        var loginname = new List<SelectListItem>();
-
-        //        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        //        await conn.OpenAsync();
-
-        //        string sql = "SELECT * FROM tblusers WHERE active = 'Y' AND hospitalid = @hid ORDER BY username";
-        //        using var cmd = new NpgsqlCommand(sql, conn);
-        //        cmd.Parameters.AddWithValue("@hid", hospitalId.ToString()); // FIXED HERE
-
-        //        using var reader = await cmd.ExecuteReaderAsync();
-        //        while (await reader.ReadAsync())
-        //        {
-        //            loginname.Add(new SelectListItem
-        //            {
-        //                Value = reader["loginname"].ToString(),
-        //                Text = reader["username"].ToString()
-        //            });
-        //        }
-
-        //        return Json(loginname);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { error = "Failed to load user", details = ex.Message });
-        //    }
-        //}
-
-
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetInvestigators(int hospitalid)
-        //{
-
-        //    var list = new List<SelectListItem>();
-
-        //    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        //    await conn.OpenAsync();
-
-        //    string sql = @"SELECT * FROM tblusers
-        //           WHERE hospitalid = @hospitalId AND active = 'Y'
-        //           ORDER BY username, surname";
-
-        //    using var cmd = new NpgsqlCommand(sql, conn);
-        //    //cmd.Parameters.AddWithValue("@hospitalId", hospitalId);
-        //    cmd.Parameters.AddWithValue("@hospitalId", hospitalid.ToString());
-
-        //    using var reader = await cmd.ExecuteReaderAsync();
-        //    while (await reader.ReadAsync())
-        //    {
-        //        string loginname = reader["loginname"].ToString();
-        //        string fullName = $"{reader["username"]} {reader["surname"]}";
-        //        list.Add(new SelectListItem { Value = loginname, Text = fullName });
-        //    }
-
-        //    return Json(list);
-        //}
-
         [HttpGet]
         public async Task<List<SelectListItem>> GetInvestigators(int hospitalid)
         {
@@ -1892,8 +1828,65 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         }
 
         //check similar incidents
+        //[HttpGet]
+        //public async Task<IActionResult> CheckSimilarIncidents(string ptenumber, string? description)
+        //{
+        //    var results = new List<object>();
+
+        //    using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        //    await conn.OpenAsync();
+
+        //    var sql = @"
+        //SELECT qarid, incidentdate, incidenttype, description, ptenumber 
+        //FROM tblincident 
+        //WHERE active = 'Y'
+        //  AND incidentdate >= NOW() - INTERVAL '6 months'
+        //  AND (
+        //    LOWER(ptenumber) = LOWER(@ptenumber)
+        //  )";
+
+        //    var keywords = new List<string>();
+        //    if (!string.IsNullOrEmpty(description))
+        //    {
+        //        keywords = description
+        //            .Split(" ", StringSplitOptions.RemoveEmptyEntries)
+        //            .Where(w => w.Length > 3)
+        //            .Take(5)
+        //            .ToList();
+
+        //        if (keywords.Count > 0)
+        //        {
+        //            var keywordConditions = string.Join(" OR ", keywords.Select((k, i) => $"LOWER(description) LIKE LOWER(@kw{i})"));
+        //            sql += $" OR ({keywordConditions})";
+        //        }
+        //    }
+
+        //    using var cmd = new NpgsqlCommand(sql, conn);
+        //    cmd.Parameters.AddWithValue("ptenumber", ptenumber ?? "");
+
+        //    for (int i = 0; i < keywords.Count; i++)
+        //    {
+        //        cmd.Parameters.AddWithValue($"kw{i}", $"%{keywords[i]}%");
+        //    }
+
+        //    using var reader = await cmd.ExecuteReaderAsync();
+        //    while (await reader.ReadAsync())
+        //    {
+        //        results.Add(new
+        //        {
+        //            qarid = reader["qarid"],
+        //            date = ((DateTime)reader["incidentdate"]).ToString("yyyy-MM-dd"),
+        //            type = reader["incidenttype"].ToString(),
+        //            desc = reader["description"].ToString(),
+        //            ptenum = reader["ptenumber"].ToString()
+        //        });
+        //    }
+
+        //    return Json(results);
+        //}
+
         [HttpGet]
-        public async Task<IActionResult> CheckSimilarIncidents(string ptenumber, string? description)
+        public async Task<IActionResult> CheckSimilarIncidents(string ptenumber, string? description, string hospitalid)
         {
             var results = new List<object>();
 
@@ -1905,9 +1898,10 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
         FROM tblincident 
         WHERE active = 'Y'
           AND incidentdate >= NOW() - INTERVAL '6 months'
+          AND hospitalid = @hospitalid
           AND (
-            LOWER(ptenumber) = LOWER(@ptenumber)
-          )";
+              LOWER(ptenumber) = LOWER(@ptenumber)
+    ";
 
             var keywords = new List<string>();
             if (!string.IsNullOrEmpty(description))
@@ -1925,8 +1919,11 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
                 }
             }
 
+            sql += ")"; // closing the big condition
+
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("ptenumber", ptenumber ?? "");
+            cmd.Parameters.AddWithValue("hospitalid", hospitalid ?? "");
 
             for (int i = 0; i < keywords.Count; i++)
             {
@@ -1948,6 +1945,7 @@ private async Task<List<SelectListItem>> GetSubCategories(int level, string pare
 
             return Json(results);
         }
+
 
         //check similar incidents
 

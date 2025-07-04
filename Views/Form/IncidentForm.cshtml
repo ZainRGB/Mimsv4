@@ -119,10 +119,21 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 
 
 
-        <div class="form_grid_item">
+@*         <div class="form_grid_item">
             <label for="ptenumber" id="ptenumberLabel">No Incident Selected</label><br />
             <input type="text" class="form-control" asp-for="ptenumber" id="ptenumberInput">
+        </div> *@
+
+        <div class="form_grid_item">
+            <label for="ptenumber" id="ptenumberLabel">Patient Number</label><br />
+            <input type="text" class="form-control" asp-for="ptenumber" id="ptenumberInput">
+
+            <div id="incidentMatchNotice" style="margin-top: 5px; display: none;">
+                <span style="color: orangered; font-weight: 500;">Incidents found within 6 months. </span>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showIncidentModal()">Click to view</button>
+            </div>
         </div>
+
 
 
 
@@ -328,7 +339,8 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 
         <div class="form_grid_item_span2">
             <label>Short Initial Description</label><br>
-            <textarea asp-for="description" class="form_textarea" id="descriptionInput"></textarea>
+            <div id="descriptionCount" class="text-muted small">0 / 300 characters</div>
+            <textarea asp-for="description" class="form_textarea" id="descriptionInput" spellcheck="true" maxlength="300"></textarea>
         </div>
 
         <div class="form_grid_item_span2" style="padding-left:20px;font-size:1rem;">
@@ -341,10 +353,10 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 
         <div class="form_grid_item_span3_nc">
             <label>Corrective Action</label><br>
-            <textarea asp-for="correctaction" class="form_textarea"></textarea>
+            <textarea asp-for="correctaction" class="form_textarea" id="correctaction"></textarea>
             <br />
             <label>Preventative Action</label><br>
-            <textarea asp-for="preventaction" class="form_textarea"></textarea>
+            <textarea asp-for="preventaction" class="form_textarea" id="preventaction"></textarea>
         </div>
 
         <div class="form_grid_item">
@@ -356,7 +368,7 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
         <div class="form_grid_item_span3_nc">
             <div class="form_grid_item_span4_nc" id="textArea4" style="display:none;">
                 <label>Brief Description as to why the Incident is being put on hold.</label><br>
-                <textarea asp-for="onholddesc" class="form_textarea"></textarea>
+                <textarea asp-for="onholddesc" class="form_textarea" id="onholddesc"></textarea>
                 <input type="hidden" asp-for="onholddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <input type="text" asp-for="onholddesctime" value="@DateTime.Now.ToString("HH:mm")"  />
             </div>
@@ -367,7 +379,7 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
         <div class="form_grid_item_span3_nc">
             <div class="form_grid_item_span4_nc" id="textArea5" style="display:none;">
                 <label>Closing Description.</label><br>
-                <textarea asp-for="closeddesc" class="form_textarea"></textarea>
+                <textarea asp-for="closeddesc" class="form_textarea" id="closeddesc"></textarea>
                 <input type="hidden" asp-for="closeddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <input type="text" asp-for="closeddesctime" value="@DateTime.Now.ToString("HH:mm")" />
             </div>
@@ -406,13 +418,14 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
       
         <div class="form_grid_item_span4_nc">
 
-			<button type="submit" class="btn btn-primary mt-4">Submit Incident</button>
+			<button type="submit" class="btn btn-primary mt-4">Next to Continue</button>
         </div>
 
     </section>
    
 </form>
 
+<div id="summernote"></div>
 
 <!--Modal to check--->
 <div class="modal fade" id="similarIncidentsModal" tabindex="-1" aria-labelledby="similarIncidentsModalLabel" aria-hidden="true">
@@ -431,6 +444,7 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 
 <script>
     let incidentModalInstance;
+    let similarIncidents = [];
 
     document.addEventListener("DOMContentLoaded", function () {
         const modalEl = document.getElementById("similarIncidentsModal");
@@ -438,30 +452,47 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
             incidentModalInstance = new bootstrap.Modal(modalEl);
         }
 
-        // Attach event listeners
-        ["ptenumberInput", "descriptionInput"].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) {
-                input.addEventListener("blur", () => {
-                    checkSimilarIncidents();
-                });
-            }
-        });
+        const pteInput = document.getElementById("ptenumberInput");
+        if (pteInput) {
+            pteInput.addEventListener("blur", () => {
+                checkSimilarIncidents();
+            });
+        }
     });
 
     async function checkSimilarIncidents() {
-        const data = {
-            ptenumber: document.getElementById("ptenumberInput")?.value || "",
-            description: document.getElementById("descriptionInput")?.value || ""
-        };
+        const ptenumber = document.getElementById("ptenumberInput")?.value || "";
+        const description = document.getElementById("descriptionInput")?.value || "";
+        const hospitalid = document.getElementById("hospitalid")?.value || "";
 
-        const query = new URLSearchParams(data).toString();
+        // Skip if hospital not selected (admin case)
+        if (!hospitalid) return;
+
+        // Also skip if both fields are empty
+        if (!ptenumber && !description) return;
+
+        const query = new URLSearchParams({
+            ptenumber,
+            description,
+            hospitalid
+        }).toString();
+
         const res = await fetch(`/Form/CheckSimilarIncidents?${query}`);
         const results = await res.json();
+        similarIncidents = results;
 
-        if (results.length > 0) {
+        const notice = document.getElementById("incidentMatchNotice");
+        if (results.length > 0 && notice) {
+            notice.style.display = "block";
+        } else if (notice) {
+            notice.style.display = "none";
+        }
+    }
+
+    function showIncidentModal() {
+        if (similarIncidents.length > 0) {
             let html = "";
-            results.forEach(r => {
+            similarIncidents.forEach(r => {
                 html += `
                     <div class="mb-3">
                         <strong>PTE:</strong> ${r.ptenum}<br>
@@ -475,12 +506,12 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
             });
 
             document.getElementById("modal-incident-body").innerHTML = html;
-
-            // ✅ Just show the already-initialized modal
             incidentModalInstance?.show();
         }
     }
 </script>
+
+
 
 
 
@@ -1247,3 +1278,34 @@ Incident Created, Captured and Reported by <b>@Context.Session.GetString("userna
 
 }
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const textarea = document.getElementById('descriptionInput');
+        const counter = document.getElementById('descriptionCount');
+        const maxLength = 300;
+
+        textarea.addEventListener('input', function () {
+            let content = textarea.value;
+
+            // Trim if pasted content exceeds max length
+            if (content.length > maxLength) {
+                textarea.value = content.substring(0, maxLength);
+                content = textarea.value;
+            }
+
+            const length = content.length;
+            counter.textContent = `${length} / ${maxLength} characters`;
+
+            // Optional: turn red if limit reached
+            if (length >= maxLength) {
+                counter.classList.add('text-danger');
+                counter.textContent += ' (limit reached)';
+            } else {
+                counter.classList.remove('text-danger');
+            }
+        });
+
+        // Trigger count on page load if textarea has value
+        textarea.dispatchEvent(new Event('input'));
+    });
+</script>

@@ -739,16 +739,7 @@ a.active-link {
 
     /* Optional: background or border for icon */
     a.active-link .icon {
-
-        box-shadow:
-        /* Top shadow: Red */
-        0 -10px 25px -8px rgba(255, 0, 0, 0.4),
-        /* Right shadow: Green */
-        15px 0 25px -8px rgba(0, 255, 0, 0.4),
-        /* Bottom shadow: Blue */
-        0 15px 25px -8px rgba(0, 0, 255, 0.4),
-        /* Left shadow: Yellow */
-        -15px 0 25px -8px rgba(255, 255, 0, 0.4);
+scale:1.3;
     }
 .nav-item a:hover {
     color: #ff7043; /* lighter orange */

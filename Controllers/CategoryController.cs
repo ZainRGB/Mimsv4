@@ -12,32 +12,70 @@ namespace Mimsv2.Controllers
         {
             _configuration = configuration;
         }
-        public async Task<IActionResult> IndexAsync()
+        [HttpGet]
+        public async Task<IActionResult> IndexAsync(string selectedCat = null)
         {
-            var users = new List<CategoryModel>();
+            var allCats = new List<string>();
+            var items = new List<CategoryModel>();
 
-            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            await conn.OpenAsync();
-
-            string sql = @"SELECT * from tblincidenttype WHERE active = 'Y' order by cat ";
-            using var cmd = new NpgsqlCommand(sql, conn);
-            using var reader = await cmd.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
+            // 🔹 First: Get distinct categories (separate connection)
+            using (var conn1 = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                users.Add(new CategoryModel
+                await conn1.OpenAsync();
+                string catSql = @"SELECT DISTINCT cat FROM tblincidenttype WHERE active = 'Y' ORDER BY cat";
+
+                using var catCmd = new NpgsqlCommand(catSql, conn1);
+                using var catReader = await catCmd.ExecuteReaderAsync();
+                while (await catReader.ReadAsync())
                 {
-                    id = Convert.ToInt32(reader["id"]),
-                    cat = reader["cat"].ToString(),
-                    active = reader["active"].ToString(),
-                    subcat1 = reader["subcat1"].ToString(),
-                    subcat2 = reader["subcat2"].ToString(),
-                    subcat3 = reader["subcat3"].ToString()
-                });
+                    allCats.Add(catReader["cat"].ToString());
+                }
             }
 
-            return View(users);
+            // 🔹 Second: Get filtered incident type records (new connection)
+            using (var conn2 = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                await conn2.OpenAsync();
+                string itemSql = @"SELECT * FROM tblincidenttype WHERE active = 'Y'";
+
+                if (!string.IsNullOrEmpty(selectedCat))
+                {
+                    itemSql += " AND cat = @cat";
+                }
+
+                itemSql += " ORDER BY cat";
+
+                using var itemCmd = new NpgsqlCommand(itemSql, conn2);
+
+                if (!string.IsNullOrEmpty(selectedCat))
+                {
+                    itemCmd.Parameters.AddWithValue("@cat", selectedCat);
+                }
+
+                using var reader = await itemCmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    items.Add(new CategoryModel
+                    {
+                        id = Convert.ToInt32(reader["id"]),
+                        cat = reader["cat"].ToString(),
+                        active = reader["active"].ToString(),
+                        subcat1 = reader["subcat1"].ToString(),
+                        subcat2 = reader["subcat2"].ToString(),
+                        subcat3 = reader["subcat3"].ToString()
+                    });
+                }
+            }
+
+            // ✅ Send to view
+            ViewBag.CatList = allCats;
+            ViewBag.SelectedCat = selectedCat;
+
+            return View(items);
         }
+
+
+
 
 
         //ADD Category
@@ -69,8 +107,10 @@ namespace Mimsv2.Controllers
                 using var cmd = new NpgsqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@cat", model.cat ?? "");
                 cmd.Parameters.AddWithValue("@subcat1", model.subcat1 ?? "");
-                cmd.Parameters.AddWithValue("@subcat2", model.subcat2 ?? "");
-                cmd.Parameters.AddWithValue("@subcat3", model.subcat3 ?? "");
+                //cmd.Parameters.AddWithValue("@subcat2", model.subcat2 ?? "");
+                //cmd.Parameters.AddWithValue("@subcat3", model.subcat3 ?? "");
+                cmd.Parameters.AddWithValue("@subcat2", string.IsNullOrWhiteSpace(model.subcat2) ? "n/a" : model.subcat2);
+                cmd.Parameters.AddWithValue("@subcat3", string.IsNullOrWhiteSpace(model.subcat3) ? "n/a" : model.subcat3);
 
                 await cmd.ExecuteNonQueryAsync();
                 return RedirectToAction("Index");

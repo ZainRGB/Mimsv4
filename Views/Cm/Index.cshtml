@@ -137,7 +137,7 @@
 
 
     <div class="dash_item_span4">
-        <h3 class="mb-4">Incident Counts Per Hospital</h3>
+        <h3 class="mb-4">Incident Counts Per Hospital @selectedYear</h3>
         <canvas id="incidentChart" height="100"></canvas>
     </div>
     <div class="dash_item_span2" style="position:relative;">
@@ -145,7 +145,7 @@
         <table class="form_table" id="incidentTable" style="position:absolute; top:0;left:0;">
             <thead>
                 <tr>
-                    <th>Hospital</th>
+                    <th>Hospital  (@selectedYear)</th>
                     <th>Total Incidents</th>
                 </tr>
             </thead>
@@ -362,7 +362,12 @@
 <script>
     async function loadIncidentData() {
         try {
-            const response = await fetch('/Chart/GetIncidentCountsPerHospital');
+            // Get selected year from query string
+            const urlParams = new URLSearchParams(window.location.search);
+            const year = urlParams.get('year'); // will be null if "All" is selected
+
+            // Fetch data with optional year
+            const response = await fetch(`/Chart/GetIncidentCountsPerHospital${year ? '?year=' + year : ''}`);
             const data = await response.json();
 
             // Build table
@@ -374,69 +379,68 @@
                 tableBody.appendChild(tr);
             });
 
-              // Generate a color for each bar
-    function getBarColors(count) {
-        const colors = [
-            '#007bff', '#28a745', '#ffc107', '#dc3545',
-            '#6f42c1', '#20c997', '#fd7e14', '#6610f2',
-            '#17a2b8', '#e83e8c', '#343a40', '#adb5bd'
-        ];
-        // If more hospitals than colors, cycle through
-        return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
-    }
-
-    const labels = data.map(item => item.hospital);
-    const counts = data.map(item => item.count);
-    const barColors = getBarColors(counts.length);
-
-    new Chart(document.getElementById('incidentChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Incident Count',
-                data: counts,
-                backgroundColor: barColors
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Incidents'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                datalabels: {
-                    color: 'white',
-                    anchor: 'end',
-                    align: 'start',
-                    font: {
-                        weight: 'bold',
-                        size: 12
-                    },
-                    formatter: value => value
-                }
+            // Generate a color for each bar
+            function getBarColors(count) {
+                const colors = [
+                    '#007bff', '#28a745', '#ffc107', '#dc3545',
+                    '#6f42c1', '#20c997', '#fd7e14', '#6610f2',
+                    '#17a2b8', '#e83e8c', '#343a40', '#adb5bd'
+                ];
+                return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
             }
-        },
-        plugins: [ChartDataLabels]
-    });
+
+            const labels = data.map(item => item.hospital);
+            const counts = data.map(item => item.count);
+            const barColors = getBarColors(counts.length);
+
+            new Chart(document.getElementById('incidentChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Incident Count',
+                        data: counts,
+                        backgroundColor: barColors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Incidents'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        datalabels: {
+                            color: 'white',
+                            anchor: 'end',
+                            align: 'start',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: value => value
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
 
         } catch (error) {
             console.error('Failed to load incident data:', error);
         }
     }
 
-    // Load on page ready
     document.addEventListener('DOMContentLoaded', loadIncidentData);
 </script>
+
 
 
 

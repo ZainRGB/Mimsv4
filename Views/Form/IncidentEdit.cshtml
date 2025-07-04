@@ -281,24 +281,17 @@
         <div class="form_grid_item_span4e">Section E: Investigations / Description / Root Causes  </div>
         <div class="form_grid_item_span2">
             <label>Short Initial Description</label><br>
-            <textarea asp-for="description" class="form_textarea"></textarea>
+            <div id="descriptionCount" class="text-muted small">0 / 300 characters</div>
+            <textarea asp-for="description" class="form_textarea" id="descriptionInput"></textarea>
         </div>
+
+
+
+
         <div class="form_grid_item_span2" style="padding-left:20px;font-size:1rem;">
-            <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
+            <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Root Cause and Near Root Cause required for Pressure Injuries)</span>
             <br />
             <table style="width:100%;padding:6px;border-collapse:collapse;">
-                <tr>
-                    <td style="width:180px;border-bottom:1px solid lightgrey;">Add Investigation</td>
-                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="investcheck" value="Y" onclick="textAreaShow1('inline');" class="form_radio"> </td>
-                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="investcheck" value="N" onclick="textAreaShow1('none');" class="form_radio" checked></td>
-
-                </tr>
-                <tr>
-                    <td style="border-bottom:1px solid lightgrey;">Add Root Cause </td>
-                    <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="rootcheck" value="Y" onclick="textAreaShow2('inline');" class="form_radio"></td>
-                    <td style="border-bottom:1px solid lightgrey;">No: <input type="radio" name="rootcheck" value="N" onclick="textAreaShow2('none');" class="form_radio" checked></td>
-
-                </tr>
                 <tr>
                     <td style="border-bottom:1px solid lightgrey;">Add Near Root Cause </td>
                     <td style="width:100px;border-bottom:1px solid lightgrey;">Yes: <input type="radio" name="nearrootcheck" value="Y" onclick="textAreaShow3('inline');" class="form_radio"></td>
@@ -307,29 +300,35 @@
                 </tr>
             </table>
         </div>
-        
-        <div class="form_grid_item_span4e_nc" id="textArea1" style="display:none;">
-            <label>
-                Investigation <span style="color:orangered;font-weight:300;font-size:0.85rem;">* (No Investigation, Root Cause and Near Root Cause required for Pressure Injuries)</span>
-            </label><br>
-            <textarea asp-for="investigation" class="form_textarea"></textarea>
-        </div>
-        <div class="form_grid_item_span4e_nc" id="textArea2" style="display:none;">
+        <div class="form_grid_item_span4e_nc">
             <label>Root Cause</label><br>
-            <textarea asp-for="summary" class="form_textarea"></textarea>
+            <textarea asp-for="summary" class="form_textarea" id="summary"></textarea>
         </div>
+
+        <div class="form_grid_item_span4e_nc">
+            <label>
+                Investigation
+            </label><br>
+            <textarea asp-for="investigation" class="form_textarea" id="investigation"></textarea>
+        </div>
+
+
+
+
         <div class="form_grid_item_span4e_nc" id="textArea3" style="display:none;">
             <label>Add Near Root Cause</label><br>
-            <textarea asp-for="summary2" class="form_textarea"></textarea>
+            <textarea asp-for="summary2" class="form_textarea" id="summary2"></textarea>
         </div>
+
+
 
         <div class="form_grid_item_span4e">Section F: Call to Action </div>
         <div class="form_grid_item_span3_nc">
             <label>Corrective Action</label><br>
-            <textarea asp-for="correctaction" class="form_textarea"></textarea>
+            <textarea asp-for="correctaction" class="form_textarea" id="correctaction"></textarea>
             <br />
             <label>Preventative Action</label><br>
-            <textarea asp-for="preventaction" class="form_textarea"></textarea>
+            <textarea asp-for="preventaction" class="form_textarea" id="preventaction"></textarea>
         </div>
 
         <div class="form_grid_item">
@@ -397,7 +396,7 @@
         <div class="form_grid_item_span3_nc">
             <div class="form_grid_item_span4e_nc" id="textArea4" style="display:none;">
                 <label style="color:limegreen;">On Hold Description</label><br>
-                <textarea asp-for="onholddesc" class="form_textarea"></textarea>
+                <textarea asp-for="onholddesc" class="form_textarea" id="onholddesc"></textarea>
                 <input type="hidden" asp-for="onholddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <input type="hidden" asp-for="onholddesctime" value="@DateTime.Now.ToString("HH:mm")" />
             </div>
@@ -407,7 +406,7 @@
         <div class="form_grid_item_span3_nc">
             <div class="form_grid_item_span4e_nc" id="textArea5" style="display:none;">
                 <label style="color:orangered;">Closing Description.</label><br>
-                <textarea asp-for="closeddesc" class="form_textarea"></textarea>
+                <textarea asp-for="closeddesc" class="form_textarea" id="closeddesc"></textarea>
                 <input type="hidden" asp-for="closeddescdate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                 <input type="hidden" asp-for="closeddesctime" value="@DateTime.Now.ToString("HH:mm")" />
             </div>
@@ -446,7 +445,7 @@
 
         </div>
 
-        <div class="grid_item>
+        <div class="grid_item">
             <input type="hidden" id="qarid" value="@Model.QarId" />
 
         <div class="form-group mt-3">
@@ -458,12 +457,12 @@
 
         <div class="form_grid_item_span4e_nc">
             <script>
-                function textAreaShow1(displayStyle) {
-                    document.getElementById('textArea1').style.display = displayStyle;
-                }
-                function textAreaShow2(displayStyle) {
-                    document.getElementById('textArea2').style.display = displayStyle;
-                }
+                // function textAreaShow1(displayStyle) {
+                //     document.getElementById('textArea1').style.display = displayStyle;
+                // }
+                // function textAreaShow2(displayStyle) {
+                //     document.getElementById('textArea2').style.display = displayStyle;
+                // }
                 function textAreaShow3(displayStyle) {
                     document.getElementById('textArea3').style.display = displayStyle;
                 }
@@ -1547,4 +1546,35 @@
     </script>
 
 
-}
+}<script>
+     document.addEventListener("DOMContentLoaded", function () {
+         const textarea = document.getElementById('descriptionInput');
+         const counter = document.getElementById('descriptionCount');
+         const maxLength = 300;
+
+         textarea.addEventListener('input', function () {
+             let content = textarea.value;
+
+             // Trim if pasted content exceeds max length
+             if (content.length > maxLength) {
+                 textarea.value = content.substring(0, maxLength);
+                 content = textarea.value;
+             }
+
+             const length = content.length;
+             counter.textContent = `${length} / ${maxLength} characters`;
+
+             // Optional: turn red if limit reached
+             if (length >= maxLength) {
+                 counter.classList.add('text-danger');
+                 counter.textContent += ' (limit reached)';
+             } else {
+                 counter.classList.remove('text-danger');
+             }
+         });
+
+         // Trigger count on page load if textarea has value
+         textarea.dispatchEvent(new Event('input'));
+     });
+</script>
+

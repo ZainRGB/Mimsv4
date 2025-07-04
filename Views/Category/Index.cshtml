@@ -9,8 +9,27 @@
 <table class="form_table mb-5">
     <thead>
         <tr>
-            <th colspan="2" style="background-color:white;"><h3>Incident Categories</h3></th>
-            <th colspan="3" style="background-color:white;text-align:right;"><a asp-controller="Category" asp-action="AddCategory" class="btn btn-sm btn-secondary" style="width:200px;">Add New Category</a></th>
+            <th colspan="1" style="background-color:white;"><h3>Incident Categories</h3></th>
+            <th colspan="2" style="background-color:white;text-align:right;"><a asp-controller="Category" asp-action="AddCategory" class="btn btn-sm btn-secondary" style="width:200px;">Add New Category</a></th>
+            <th colspan="2" style="background-color:white;text-align:right;">
+
+
+                <form method="get" asp-controller="Category" asp-action="Index">
+                    <select name="selectedCat" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Select Category --</option>
+                        @foreach (var cat in ViewBag.CatList as List<string>)
+                        {
+                            <option value="@cat" selected="@(ViewBag.SelectedCat == cat ? "selected" : null)">
+                                @cat
+                            </option>
+                        }
+                    </select>
+                </form>
+
+
+
+
+            </th>
         </tr>
 
         <tr>
